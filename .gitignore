@@ -1,0 +1,10 @@
+
+# Directories:
+bin/
+build/
+documentation/
+
+# FileTypes:
+*.swp
+*.swo
+
