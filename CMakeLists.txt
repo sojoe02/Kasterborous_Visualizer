@@ -14,7 +14,10 @@ configure_file (
 #------------------------------------------------
 #General files:
 set (GENERAL	
-	src/main.cpp	
+	src/main.cpp
+	src/event.h
+	src/ui.h
+	src/ui.cpp	
 )
 #------------------------------------------------
 #Set subdirectories:

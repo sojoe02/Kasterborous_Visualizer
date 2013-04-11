@@ -16,4 +16,17 @@
  * =====================================================================================
  */
 
+#include<iostream>
+#include<fstream>
+#include<stdio.h>
 
+#include"maphandler.h"
+
+void MapHandler::parseData(std::string filename){
+
+	fstream file;
+	std::ifstream file(filename.c_str(), std::ifstream::binary);
+	
+	
+		
+}
