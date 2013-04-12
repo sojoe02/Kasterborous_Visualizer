@@ -3,7 +3,7 @@ project(Kast_Vis)
 
 #Version number:
 set (Kasterborous_Visualizer_VERSION_MAJOR 0)
-set (Kasterborous_Visualizer_VERSION_MINOR 1)
+set (Kasterborous_Visualizer_VERSION_MINOR 11)
 #Configure a header file to pass CMake stuff to the source code:
 configure_file (
   ${PROJECT_SOURCE_DIR}/kast_vis.h.in
@@ -17,7 +17,11 @@ set (GENERAL
 	src/main.cpp
 	src/event.h
 	src/ui.h
-	src/ui.cpp	
+	src/ui.cpp
+	src/maphandler.cpp
+	src/maphandler.h
+	src/intensitymap.cpp
+	src/intensitymap.h
 )
 #------------------------------------------------
 #Set subdirectories:

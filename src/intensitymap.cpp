@@ -13,6 +13,8 @@
  * =====================================================================================
  */
 
+#include "intensitymap.h"
+
 IntensityMap::IntensityMap(){
 
 }
@@ -20,17 +22,17 @@ IntensityMap::IntensityMap(){
 /**
  * 
  */
-IntensityMap::binEvent(Event::dataEvent devent){
-	intensityLevels.push_back(devent);	
+void IntensityMap::binEvent(Event::dataEvent devent){
+	dataEvents.push_back(devent);	
 }
 
 /**
  * 
  */
-IntensityLevels::normalizeIntensityLevels(double maxValue, double minValue){
+void IntensityMap::normalizeIntensityLevels(double maxValue, double minValue){
 	for(itIlevels = intensityLevels.begin(); itIlevels != intensityLevels.end(); ++itIlevels){
 		double cLevel = *itIlevels;
-		nLevel = (maxValue - minValue) / (cLevel - minValue);
+		double nLevel = (maxValue - minValue) / (cLevel - minValue);
 		normalizedIntensityLevels.push_back(nLevel);
 	}
 }

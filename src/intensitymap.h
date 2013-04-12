@@ -6,8 +6,7 @@
 
 class IntensityMap{
 	public:
-		void IntensityMap();
-		void ~IntensityMap();
+		IntensityMap();
 		void binEvent(Event::dataEvent devent);
 		void calculateIntensityLevels();
 		void normalizeIntensityLevels(double maxValue, double minValue);
@@ -19,7 +18,7 @@ class IntensityMap{
 		
 		std::list<double> intensityLevels;
 		std::list<double> normalizedIntensityLevels;	
-		std::list<double>::iterator itILevels;
+		std::list<double>::iterator itIlevels;
 };	
 
 

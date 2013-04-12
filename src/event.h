@@ -1,11 +1,15 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-class Event{
+class Event
+{
+	public :
+
 	//define the data event, precisely the same as eventqueues:
 	struct dataEvent{
 		unsigned long long id;
 		int duration;
+		unsigned long long activationTime;
 		double originX;
 		double originY;
 		double originID;
@@ -23,6 +27,7 @@ class Event{
 		double areaY; /*!< Areas Y size[m] (std computer coordinate system with reversed Y axis)*/
 		double areaX; /*!< Areas X size[m] */
 	};
+
 
 };
 #endif // EVENT_H

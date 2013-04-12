@@ -12,18 +12,41 @@
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Text_Buffer.H>
+#include <FL/Fl_Input.H>
+#include <FL/Fl_Widget.H>
+#include <FL/Fl_Button.H>
+#include <string>
 
+#include "maphandler.h"
+
+class MapHandler;
 class UI
 {
 	public:
-		UI(Fl_Window * window);
+		UI(Fl_Window* window);
 		Fl_Text_Display *output;
-		
+
+		void printmsg(std::string msg);
+				
 		//Callback functions:
 		static void zChanged_static_callback(Fl_Widget *w, void *f);
 		void zChanged_callback(Fl_Widget *w);
 
-	private:
+		static void pButton_static_callback(Fl_Widget *w, void *f);
+		void pButton_callback(Fl_Widget *w, MapHandler *m);
+
+		//const values:
+		static const int UI_X = 1024;
+		static const int UI_Y = 700;
+
+
+	private:		
+		void setupMapTab();
+		void setupDataTab();
+
+		MapHandler *maphandler;
+
+
 		Fl_Window *window;
 		//Tabs:
 		Fl_Tabs *tabs;
@@ -35,8 +58,13 @@ class UI
 		Fl_Value_Output *zOutput;
 		Fl_Counter *mapCounter;
 		Fl_Text_Buffer *outputBuffer;
+		Fl_Counter *stepSizeCounter;
+		Fl_Button *processDataButton;
 
+		Fl_Label *datalabel;
+		Fl_Input *datafile;
 
+		int xmax,ymax;
 };
 
 #endif // UI_H
