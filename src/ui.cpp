@@ -18,6 +18,7 @@
 
 #include "ui.h"
 #include "maphandler.h"
+#include "utility.h"
 
 UI::UI(Fl_Window* window)
 	:window(window)
@@ -33,7 +34,6 @@ UI::UI(Fl_Window* window)
 	dataTab = new Fl_Group(2,20,xmax-10,ymax-10,"data processing");
 	tabs->add(dataTab);
 	tabs->add(mapTab);
-
 	setupDataTab();
 
 	/* Then setup the map tab */
@@ -44,13 +44,16 @@ UI::UI(Fl_Window* window)
 		output->insert(buffer);
 	}
 	//	Fl_Hor_Value_Slider *timeSlider = new Fl_Hor_Value_Slider(2, 60, 140, 20, "Time-Resolution");
-	mapCounter = new Fl_Counter(2, ymax-50, 160, 20, "Active Map");
+	mapCounter = new Fl_Counter(5, 50, 160, 20, "Active Map:");
 	mapCounter->step(1, 10);
 	mapCounter->bounds(0, 5000);
+	mapCounter->align(FL_ALIGN_TOP_LEFT);
 
+	colormap = new ColorMap(5,120,160,window->h() - 170,"Colour Map:"); 
+	colormap->align(FL_ALIGN_TOP_LEFT);
+
+	mapTab->add(colormap);
 	mapTab->add(mapCounter);
-
-
 }
 
 
@@ -59,6 +62,8 @@ void UI::printmsg(std::string msg){
 	output->insert(msg.c_str());
 	output->insert("\n");
 }
+
+
 
 //CALLBACK FUNCTIONS:
 void UI::zChanged_static_callback(Fl_Widget *w, void *f){
@@ -81,6 +86,8 @@ void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
 	maphandler->setProcessVariables(fname, t, s);
 }
 
+//SETUP FUNCTIONS:
+
 void UI::setupDataTab(){
 	zCounter = new Fl_Hor_Slider(5, 50, 200,25, "Z-Thresshold:");
 	zCounter->bounds(0, 1);
@@ -88,10 +95,7 @@ void UI::setupDataTab(){
 	zCounter->callback(zChanged_static_callback, (void*)this);
 	zOutput = new Fl_Value_Output(205, 50, 100, 25, "");
 	zCounter->align(FL_ALIGN_TOP_LEFT);
-	
-	//datalabel = new Fl_Label();
-	//datalabel->value = "data file:";
-	//datalabel->draw(5,150,350,25,FL_ALIGN_LEFT_BOTTOM);
+
 	datafile = new Fl_Input(5,150, 350,25,"Filename:");
 	datafile->insert("data.kas");
 	datafile->align(FL_ALIGN_TOP_LEFT);
@@ -108,13 +112,4 @@ void UI::setupDataTab(){
 	output = new Fl_Text_Display(500,50,450,600,"Output");
 	outputBuffer = new Fl_Text_Buffer();
 	output->buffer(outputBuffer);
-
-	/*
-	dataTab->add(zCounter);
-	dataTab->add(zOutput);
-	dataTab->add(output);
-	dataTab->add(datafile);
-	dataTab->add(stepSizeCounter);
-	dataTab->add(processDataButton);
-	*/
 }

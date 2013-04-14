@@ -15,6 +15,7 @@ configure_file (
 #General files:
 set (GENERAL	
 	src/main.cpp
+	src/utility.h
 	src/event.h
 	src/ui.h
 	src/ui.cpp
@@ -23,11 +24,16 @@ set (GENERAL
 	src/intensitymap.cpp
 	src/intensitymap.h
 )
+
+set (WIDGET
+	src/widgets/colormap.cpp
+	src/widgets/colormap.h
+)
 #------------------------------------------------
 #Set subdirectories:
 #------------------------------------------------
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-add_executable(kast_vis ${GENERAL})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets)
+add_executable(kast_vis ${GENERAL} ${WIDGET})
 #------------------------------------------------
 #Handle LUA implementation:
 #------------------------------------------------

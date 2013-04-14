@@ -18,6 +18,7 @@
 #include <string>
 
 #include "maphandler.h"
+#include "colormap.h"
 
 class MapHandler;
 class UI
@@ -45,8 +46,6 @@ class UI
 		void setupDataTab();
 
 		MapHandler *maphandler;
-
-
 		Fl_Window *window;
 		//Tabs:
 		Fl_Tabs *tabs;
@@ -63,6 +62,8 @@ class UI
 
 		Fl_Label *datalabel;
 		Fl_Input *datafile;
+
+		ColorMap *colormap;
 
 		int xmax,ymax;
 };
