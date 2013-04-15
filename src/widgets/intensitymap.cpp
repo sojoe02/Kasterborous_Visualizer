@@ -13,9 +13,27 @@
  * =====================================================================================
  */
 
+#include <string.h>
+#include <stdio.h>
+
 #include "intensitymap.h"
 
-IntensityMap::IntensityMap(){
+
+
+IntensityMap::IntensityMap(const char* filename,int X, int Y, int W, int H, const char *L)
+	:Fl_Widget(X,Y,W,H,L)
+{
+
+	L_State = luaL_newstate();
+	luaL_openlibs(L_State);
+	//loadfile:
+	if(luaL_loadfile(L_State, filename) || lua_pcall(L_State,0,0,0)){
+		printf("error : %s \n", lua_tostring(L_State, -1));
+	}	
+
+}
+
+void IntensityMap::draw(){
 
 }
 

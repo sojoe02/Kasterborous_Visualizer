@@ -24,8 +24,7 @@ UI *ui;
 int main(int argc, char **argv) {
 	window = new Fl_Window(UI::UI_X,UI::UI_Y,"Kasterborous Visualizer");
 
-	//maphandler = new MapHandler(ui);
-	ui =  new UI(window);
+	UI ui(window);
 
 	//maphandler->setProcessVariables("323",5,5);	
 

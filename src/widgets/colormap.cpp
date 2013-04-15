@@ -15,9 +15,9 @@
  *
  * =====================================================================================
  */
-#include <FL/Fl.H>
-#include <FL/fl_draw.H>
-#include "../utility.h"
+//#include <FL/Fl.H>
+//#include <FL/fl_draw.H>
+#include "utility.h"
 #include "colormap.h"
 #include <stdio.h>
 #include <string.h>
@@ -35,7 +35,8 @@ void ColorMap::draw(){
 		fl_line(x(), y()+i, x()+w() - 50,y()+i);
 		if(i % 20 == 0){
 			char buffer[20];
-			sprintf(buffer, "t=%f", thress);
+			fl_color(FL_BLACK);
+			sprintf(buffer, "I=%f", thress);
 			fl_draw(buffer,6, x() + w() - 45, y()+ i);
 		}
 

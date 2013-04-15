@@ -27,7 +27,7 @@ class UI
 		UI(Fl_Window* window);
 		Fl_Text_Display *output;
 
-		void printmsg(std::string msg);
+		void printmsg(const char *msg);
 				
 		//Callback functions:
 		static void zChanged_static_callback(Fl_Widget *w, void *f);

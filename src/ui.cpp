@@ -38,11 +38,11 @@ UI::UI(Fl_Window* window)
 
 	/* Then setup the map tab */
 
-	char buffer[40];
-	for(int i = 0; i<1000; i++){
-		sprintf(buffer, "%i\n",i);
-		output->insert(buffer);
-	}
+	//char buffer[40];
+	//for(int i = 0; i<1000; i++){
+	//	sprintf(buffer, "%i\n",i);
+	//	output->insert(buffer);
+	//}
 	//	Fl_Hor_Value_Slider *timeSlider = new Fl_Hor_Value_Slider(2, 60, 140, 20, "Time-Resolution");
 	mapCounter = new Fl_Counter(5, 50, 160, 20, "Active Map:");
 	mapCounter->step(1, 10);
@@ -57,9 +57,9 @@ UI::UI(Fl_Window* window)
 }
 
 
-void UI::printmsg(std::string msg){
+void UI::printmsg(const char* msg){
 	output->show_insert_position();	
-	output->insert(msg.c_str());
+	output->insert(msg);
 	output->insert("\n");
 }
 
@@ -82,8 +82,9 @@ void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
 	output->show_insert_position();	
 	int s = int (stepSizeCounter->value());
 	double t = zCounter->value();
-	std::string fname =datafile->value();
+	const char* fname = datafile->value();
 	maphandler->setProcessVariables(fname, t, s);
+	maphandler->parseData(fname);
 }
 
 //SETUP FUNCTIONS:
@@ -97,7 +98,7 @@ void UI::setupDataTab(){
 	zCounter->align(FL_ALIGN_TOP_LEFT);
 
 	datafile = new Fl_Input(5,150, 350,25,"Filename:");
-	datafile->insert("data.kas");
+	datafile->insert("savefile.kas");
 	datafile->align(FL_ALIGN_TOP_LEFT);
 
 	stepSizeCounter = new Fl_Counter(5,100,200,25,"Step Size:");
