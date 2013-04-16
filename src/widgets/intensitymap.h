@@ -14,11 +14,14 @@
 class IntensityMap : public Fl_Widget
 {
 	public:
-		IntensityMap(const char* filename,int X, int Y, int W, int H, const char *L);
+		IntensityMap(Event::simInfo info,int X, int Y, int W, int H, const char *L);
 		void binEvent(Event::dataEvent devent);
 		void calculateIntensityLevels();
 		void normalizeIntensityLevels(double maxValue, double minValue);
 		void showMap();
+
+		//find initial proccessing data
+		double findAbsIntensity();
 
 		//inherited from Fl_Widget:
 		void draw();
@@ -30,7 +33,11 @@ class IntensityMap : public Fl_Widget
 		std::list<double> intensityLevels;
 		std::list<double> normalizedIntensityLevels;	
 		std::list<double>::iterator itIlevels;
+
 		lua_State* L_State;
+		Event::simInfo info;
+
+		
 
 };	
 

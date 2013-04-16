@@ -25,8 +25,8 @@
 
 #include"maphandler.h"
 
-MapHandler::MapHandler(UI *ui)
-	:ui(ui),filename("sdfawef"), thresshold(0),stepSize(0)
+MapHandler::MapHandler(UI *ui, Fl_Group *mapTab)
+	:ui(ui),filename("sdfawef"),mapTab(mapTab), thresshold(0),stepSize(0)
 {
 
 }
@@ -44,8 +44,7 @@ void MapHandler::parseData(const char* filename){
 		Event::dataEvent devent; 
 		file.read(reinterpret_cast<char*>(&devent), sizeof(Event::dataEvent));
 		//sprintf(buffer, "id: %llu, activationtime %llu",devent.id, devent.activationTime);
-		//ui->printmsg(buffer);		
-
+		//ui->printmsg(buffer);	
 		dataEvents.push_back(devent);
 	}
 	ui->printmsg("data loaded");		
@@ -58,24 +57,36 @@ void MapHandler::parseData(const char* filename){
  * @param Timestep, stepsize from 1[s] to -> int_max. 
  * @return number of intensityMaps.
  */
-int MapHandler::binData(int timeStep, const char* filename, int X, int Y, int W, int H, const char* L){
+int MapHandler::binData(int timeStep, const char* L){
 		std::list<Event::dataEvent>::iterator dataItr;
-
-		double steps = (dataInfo.timeResolution * dataInfo.tmuAmount) / double(timeStep);
-
+		int steps = int(dataInfo.tmuAmount / (dataInfo.timeResolution * double(timeStep)) + 0.5);
+		//char buffer[50];
+		printf("binning data into %d steps\n", steps);
+		  	
+		ui->printmsg("initiating intensity maps\n");
 		for(int i = 0; i < steps; i++){
-			IntensityMap* imap = new IntensityMap(filename, X, Y, W, H, L);
+			IntensityMap* imap = new IntensityMap(dataInfo, mapTab->x()-100, mapTab->y()-50, 
+					mapTab->w()-150, mapTab->h()-75, L);
+			mapTab->add(imap);
+			imap->hide();
 			intensityMaps.push_back(imap);
-		}	
+		}		
 
+		ui->printmsg("binning events into suitable eventmaps\n");
 		for(dataItr = dataEvents.begin(); dataItr != dataEvents.end(); dataItr++){
-			Event::dataEvent devent = *dataItr;			
-			intensityMaps.at(int(devent.activationTime/steps))->binEvent(devent);
+			Event::dataEvent devent = *dataItr;	
+			int tmp = int(devent.activationTime / (dataInfo.timeResolution * double(timeStep)) );
+			//char buffer[100];
+			//sprintf(buffer," inserting event at step : %d, a_tmu is : %llu \n", tmp,devent.activationTime);
+			//ui->printmsg(buffer);		
+			intensityMaps.at(tmp)->binEvent(devent);
 		}
+		ui->printmsg("binning of data done\n");
 		return int (steps);
-
 }
-
+/**
+ * 
+ */
 void MapHandler::setThreadData(){
 	std::vector<IntensityMap*>::iterator mapItr;
 
@@ -87,7 +98,31 @@ void MapHandler::setThreadData(){
 		if(i == threadAmount)
 			i = 0;
 	}
+}
+/**
+ * 
+ */
+void MapHandler::calcIntensityLevels(){
 
+	std::thread* threads[threadAmount];
+
+	for(int i = 0; i < threadAmount; i++){
+		threads[i] = new std::thread(calculateIData, this, threadmap.at(i));
+	}
+	for(int i = 0; i< threadAmount; i++){
+		threads[i]->join();
+		delete threads[i];
+	}
+	
+}
+/**
+ * 
+ */
+void MapHandler::calculateIData(MapHandler* m, std::vector<IntensityMap*> idata){
+	std::vector<IntensityMap*>::iterator idtr;
+	for(idtr = idata.begin(); idtr != idata.end(); idtr++){
+		//*idtr.calculateMapValues();
+	}	
 }
 
 void MapHandler::setProcessVariables(const char* fname, double thress, int stepS){

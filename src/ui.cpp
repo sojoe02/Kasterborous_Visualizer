@@ -23,8 +23,6 @@
 UI::UI(Fl_Window* window)
 	:window(window)
 {
-	maphandler = new MapHandler(this);
-
 	xmax = UI::UI_X -15;
 	ymax = UI::UI_Y -15;
 
@@ -32,18 +30,14 @@ UI::UI(Fl_Window* window)
 
 	mapTab = new Fl_Group(2,20,xmax-10,ymax-10,"map");
 	dataTab = new Fl_Group(2,20,xmax-10,ymax-10,"data processing");
+
+	maphandler = new MapHandler(this, mapTab);	
+
 	tabs->add(dataTab);
 	tabs->add(mapTab);
 	setupDataTab();
 
 	/* Then setup the map tab */
-
-	//char buffer[40];
-	//for(int i = 0; i<1000; i++){
-	//	sprintf(buffer, "%i\n",i);
-	//	output->insert(buffer);
-	//}
-	//	Fl_Hor_Value_Slider *timeSlider = new Fl_Hor_Value_Slider(2, 60, 140, 20, "Time-Resolution");
 	mapCounter = new Fl_Counter(5, 50, 160, 20, "Active Map:");
 	mapCounter->step(1, 10);
 	mapCounter->bounds(0, 5000);
@@ -60,7 +54,7 @@ UI::UI(Fl_Window* window)
 void UI::printmsg(const char* msg){
 	output->show_insert_position();	
 	output->insert(msg);
-	output->insert("\n");
+	//output->insert("\n");
 }
 
 
@@ -85,6 +79,7 @@ void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
 	const char* fname = datafile->value();
 	maphandler->setProcessVariables(fname, t, s);
 	maphandler->parseData(fname);
+	ImapAmount = maphandler->binData(50, "IntensityMap");
 }
 
 //SETUP FUNCTIONS:

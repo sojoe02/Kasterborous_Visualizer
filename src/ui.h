@@ -66,6 +66,7 @@ class UI
 		ColorMap *colormap;
 
 		int xmax,ymax;
+		int ImapAmount;
 };
 
 #endif // UI_H

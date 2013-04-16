@@ -20,20 +20,50 @@
 
 
 
-IntensityMap::IntensityMap(const char* filename,int X, int Y, int W, int H, const char *L)
-	:Fl_Widget(X,Y,W,H,L)
+IntensityMap::IntensityMap(Event::simInfo info,int X, int Y, int W, int H, const char *L)
+	:info(info),Fl_Widget(X,Y,W,H,L)
 {
 
 	L_State = luaL_newstate();
 	luaL_openlibs(L_State);
 	//loadfile:
-	if(luaL_loadfile(L_State, filename) || lua_pcall(L_State,0,0,0)){
+	if(luaL_loadfile(L_State, info.luaFileName) || lua_pcall(L_State,0,0,0)){
 		printf("error : %s \n", lua_tostring(L_State, -1));
 	}	
 
 }
 
 void IntensityMap::draw(){
+
+}
+
+/**
+ *
+ */
+double IntensityMap::findAbsIntensity(){
+
+	double maxIntensity = 0;
+	
+
+	for(itDataEvents = dataEvents.begin(); itDataEvents != dataEvents.end()
+			;itDataEvents++){
+		Event::dataEvent event = *itDataEvents;
+		lua_getglobal(L_State, "processFunction");
+
+		lua_pushnumber(L_State, event.originX);
+		lua_pushnumber(L_State, event.originY);
+		lua_pushstring(L_State, event.table);
+
+		if(lua_pcall(L_State,3,1,0)!=LUA_OK)
+			printf("error on calling processfunction : %s\n,",
+					lua_tostring(L_State,-1));
+		
+		double tmpI = lua_tonumber(L_State,-1);
+		
+		if(tmpI > maxIntensity)
+			maxIntensity = tmpI;		
+	}
+	return maxIntensity;
 
 }
 
