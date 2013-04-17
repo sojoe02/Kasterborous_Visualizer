@@ -21,7 +21,7 @@
 
 
 IntensityMap::IntensityMap(Event::simInfo info,int X, int Y, int W, int H, const char *L)
-	:info(info),Fl_Widget(X,Y,W,H,L)
+	:info(info),maxIntensity(0),Fl_Widget(X,Y,W,H,L)
 {
 
 	L_State = luaL_newstate();
@@ -40,10 +40,9 @@ void IntensityMap::draw(){
 /**
  *
  */
-double IntensityMap::findAbsIntensity(){
+void IntensityMap::calculateMaxIntensity(){
 
-	double maxIntensity = 0;
-	
+	maxIntensity = 0;
 
 	for(itDataEvents = dataEvents.begin(); itDataEvents != dataEvents.end()
 			;itDataEvents++){
@@ -61,10 +60,19 @@ double IntensityMap::findAbsIntensity(){
 		double tmpI = lua_tonumber(L_State,-1);
 		
 		if(tmpI > maxIntensity)
-			maxIntensity = tmpI;		
-	}
-	return maxIntensity;
+			maxIntensity = tmpI;
 
+		//printf("max I is %f\n", tmpI);
+		}
+}
+
+/**
+ * Get the maximum intensity level
+ * @see IntensityMap::getMaxIntensity
+ * @return maximum intensity level
+ */
+double IntensityMap::getMaxIntensity(){
+	return maxIntensity;
 }
 
 /**

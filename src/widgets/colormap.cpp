@@ -35,7 +35,7 @@ void ColorMap::draw(){
 		fl_line(x(), y()+i, x()+w() - 50,y()+i);
 		if(i % 20 == 0){
 			char buffer[20];
-			fl_color(FL_BLACK);
+			//fl_color(FL_BLACK);
 			sprintf(buffer, "I=%f", thress);
 			fl_draw(buffer,6, x() + w() - 45, y()+ i);
 		}

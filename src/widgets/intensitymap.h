@@ -21,7 +21,8 @@ class IntensityMap : public Fl_Widget
 		void showMap();
 
 		//find initial proccessing data
-		double findAbsIntensity();
+		void calculateMaxIntensity();
+		double getMaxIntensity();
 
 		//inherited from Fl_Widget:
 		void draw();
@@ -33,6 +34,8 @@ class IntensityMap : public Fl_Widget
 		std::list<double> intensityLevels;
 		std::list<double> normalizedIntensityLevels;	
 		std::list<double>::iterator itIlevels;
+
+		double maxIntensity;
 
 		lua_State* L_State;
 		Event::simInfo info;

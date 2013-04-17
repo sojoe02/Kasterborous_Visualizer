@@ -15,6 +15,10 @@
  *
  * =====================================================================================
  */
+#include <iostream>
+#include <cstdarg>
+#include <stdio.h>
+#include <string.h>
 
 #include "ui.h"
 #include "maphandler.h"
@@ -51,10 +55,20 @@ UI::UI(Fl_Window* window)
 }
 
 
-void UI::printmsg(const char* msg){
-	output->show_insert_position();	
-	output->insert(msg);
-	//output->insert("\n");
+void UI::printmsg(const char* msg, ...){
+	std::lock_guard<std::mutex> lock(printMutex);
+
+	const char *nextStr = NULL;
+	va_list argp;
+
+	//output->show_insert_position();	
+	outputBuffer->append(msg);
+
+	va_start(argp, msg);
+	while( (nextStr = va_arg(argp, const char*)) != NULL){
+			outputBuffer->append(nextStr);
+	}
+	va_end(argp);
 }
 
 
@@ -80,6 +94,12 @@ void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
 	maphandler->setProcessVariables(fname, t, s);
 	maphandler->parseData(fname);
 	ImapAmount = maphandler->binData(50, "IntensityMap");
+	double tmp = maphandler->calcMaxIntensityLevels();
+	char buffer[100];
+	sprintf(buffer, "max level has been calculated as %f\n, adjusting thresshold slider...", tmp);
+	printmsg(buffer, NULL);
+	zCounter->bounds(0, tmp);
+	zCounter->step(tmp/100);
 }
 
 //SETUP FUNCTIONS:

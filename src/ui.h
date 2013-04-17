@@ -15,7 +15,9 @@
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Widget.H>
 #include <FL/Fl_Button.H>
+
 #include <string>
+#include <mutex>
 
 #include "maphandler.h"
 #include "colormap.h"
@@ -27,7 +29,7 @@ class UI
 		UI(Fl_Window* window);
 		Fl_Text_Display *output;
 
-		void printmsg(const char *msg);
+		void printmsg(const char *msg,...);
 				
 		//Callback functions:
 		static void zChanged_static_callback(Fl_Widget *w, void *f);
@@ -67,6 +69,8 @@ class UI
 
 		int xmax,ymax;
 		int ImapAmount;
+
+		std::mutex printMutex;
 };
 
 #endif // UI_H

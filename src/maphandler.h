@@ -30,7 +30,11 @@ class MapHandler{
 		 */
 		void findOriginPositions();
 		void calcIntensityLevels();
+		double calcMaxIntensityLevels();
 		static void calculateIData(MapHandler *m, std::vector<IntensityMap*> idata);
+		static void calculateMaxIData(MapHandler *m, std::vector<IntensityMap*> idata);
+
+		UI *ui;
 
 	private :
 		Event::simInfo dataInfo;
@@ -43,7 +47,6 @@ class MapHandler{
 		int threadAmount = 6;
 		
 
-		UI *ui;
 		//data processing variables:
 		std::string filename;
 		double thresshold;
