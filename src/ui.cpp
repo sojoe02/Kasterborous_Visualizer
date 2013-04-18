@@ -46,8 +46,10 @@ UI::UI(Fl_Window* window)
 	mapCounter->step(1, 10);
 	mapCounter->bounds(0, 5000);
 	mapCounter->align(FL_ALIGN_TOP_LEFT);
+	mapCounter->callback(mapCounter_static_callback, (void*)this);
 
-	colormap = new ColorMap(5,120,160,window->h() - 170,"Colour Map:"); 
+	
+	colormap = new ColorMap(5,120,120,window->h() - 170,"Colour Map:"); 
 	colormap->align(FL_ALIGN_TOP_LEFT);
 
 	mapTab->add(colormap);
@@ -69,11 +71,22 @@ void UI::printmsg(const char* msg, ...){
 			outputBuffer->append(nextStr);
 	}
 	va_end(argp);
+
+	//Fl::flush();
 }
 
 
 
 //CALLBACK FUNCTIONS:
+void UI::mapCounter_static_callback(Fl_Widget *w, void *f){
+	((UI *)f)->mapCounter_callback(w);
+}
+
+void UI::mapCounter_callback(Fl_Widget *w){
+	maphandler->showIntensityMap(mapCounter->value());
+}
+
+
 void UI::zChanged_static_callback(Fl_Widget *w, void *f){
 	((UI *)f)->zChanged_callback(w);
 }
@@ -92,14 +105,16 @@ void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
 	double t = zCounter->value();
 	const char* fname = datafile->value();
 	maphandler->setProcessVariables(fname, t, s);
-	maphandler->parseData(fname);
-	ImapAmount = maphandler->binData(50, "IntensityMap");
-	double tmp = maphandler->calcMaxIntensityLevels();
-	char buffer[100];
-	sprintf(buffer, "max level has been calculated as %f\n, adjusting thresshold slider...", tmp);
-	printmsg(buffer, NULL);
-	zCounter->bounds(0, tmp);
-	zCounter->step(tmp/100);
+	if(maphandler->parseData(fname)){
+		ImapAmount = maphandler->binData(stepSizeCounter->value(), "IntensityMap");
+		mapCounter->bounds(0, ImapAmount-1);
+		double tmp = maphandler->calcMaxIntensityLevels();
+		char buffer[100];
+		sprintf(buffer, "max level has been calculated as %f\n, adjusting thresshold slider...", tmp);
+		printmsg(buffer, NULL);
+		zCounter->bounds(0, tmp);
+		zCounter->step(tmp/100);
+	} else printmsg(fname, " not found", NULL);
 }
 
 //SETUP FUNCTIONS:
@@ -119,7 +134,9 @@ void UI::setupDataTab(){
 	stepSizeCounter = new Fl_Counter(5,100,200,25,"Step Size:");
 	stepSizeCounter->step(1,10);
 	stepSizeCounter->bounds(1, 5000);
+	stepSizeCounter->value(50);
 	stepSizeCounter->align(FL_ALIGN_TOP_LEFT);
+	
 
 	processDataButton = new Fl_Button(5,ymax-100,200,25,"Process Data");
 	processDataButton->callback(pButton_static_callback, (void*)this);

@@ -19,7 +19,7 @@ class MapHandler{
 		 * Parse all the data and put the data events in a linked list.
 		 * @param dataFile filename of the datafile containing all event data.
 		 */
-		void parseData(const char* filename);
+		bool parseData(const char* filename);
 		void setProcessVariables(const char* fname, double thress, int stepS);
 		
 		void setThreadData();
@@ -36,16 +36,17 @@ class MapHandler{
 
 		UI *ui;
 
+		void showIntensityMap(int index);
+
 	private :
 		Event::simInfo dataInfo;
 		std::list<Event::dataEvent> dataEvents;
 		std::vector<IntensityMap *> intensityMaps;
-		IntensityMap *activeIMap;
+		IntensityMap *activeIMap = NULL;
 
 		typedef std::vector<IntensityMap *> thread_map;
 		std::vector<thread_map> threadmap;
-		int threadAmount = 6;
-		
+		int threadAmount;		
 
 		//data processing variables:
 		std::string filename;

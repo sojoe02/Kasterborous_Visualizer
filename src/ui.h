@@ -37,7 +37,10 @@ class UI
 
 		static void pButton_static_callback(Fl_Widget *w, void *f);
 		void pButton_callback(Fl_Widget *w, MapHandler *m);
+		
+		static void mapCounter_static_callback(Fl_Widget *w, void *f);
 
+		void mapCounter_callback(Fl_Widget *w);
 		//const values:
 		static const int UI_X = 1024;
 		static const int UI_Y = 700;

@@ -6,6 +6,8 @@
 #include <FL/fl_draw.H>
 #include "event.h"
 
+#include <string>
+
 #include "lua.hpp"
 #include "lauxlib.h"
 #include "lualib.h"
@@ -14,7 +16,7 @@
 class IntensityMap : public Fl_Widget
 {
 	public:
-		IntensityMap(Event::simInfo info,int X, int Y, int W, int H, const char *L);
+		IntensityMap(Event::simInfo info,int X, int Y, int W, int H, std::string I,const char *L);
 		void binEvent(Event::dataEvent devent);
 		void calculateIntensityLevels();
 		void normalizeIntensityLevels(double maxValue, double minValue);
@@ -36,10 +38,12 @@ class IntensityMap : public Fl_Widget
 		std::list<double>::iterator itIlevels;
 
 		double maxIntensity;
+		std::string I;
 
 		lua_State* L_State;
 		Event::simInfo info;
-
+		double xcf; /*<! conversion x px to area width*/
+		double ycf; /*<! conversion y px to area height */
 		
 
 };	

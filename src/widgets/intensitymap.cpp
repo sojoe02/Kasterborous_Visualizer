@@ -20,8 +20,8 @@
 
 
 
-IntensityMap::IntensityMap(Event::simInfo info,int X, int Y, int W, int H, const char *L)
-	:info(info),maxIntensity(0),Fl_Widget(X,Y,W,H,L)
+IntensityMap::IntensityMap(Event::simInfo info,int X, int Y, int W, int H, std::string I, const char *L)
+	:info(info),maxIntensity(0), I(I),Fl_Widget(X,Y,W,H,L)
 {
 
 	L_State = luaL_newstate();
@@ -29,16 +29,30 @@ IntensityMap::IntensityMap(Event::simInfo info,int X, int Y, int W, int H, const
 	//loadfile:
 	if(luaL_loadfile(L_State, info.luaFileName) || lua_pcall(L_State,0,0,0)){
 		printf("error : %s \n", lua_tostring(L_State, -1));
-	}	
+	}
+
+	xcf = w() / info.areaX;
+	ycf = h() / info.areaY;
+	
 
 }
 
 void IntensityMap::draw(){
+	fl_color(FL_BLACK);
+	//first draw the positions of all active Autons:
+	for(itDataEvents = dataEvents.begin(); itDataEvents != dataEvents.end(); itDataEvents++){
 
+		int pxx = int((*itDataEvents).originX * xcf); 
+		int pxy = int((*itDataEvents).originY * ycf);
+		
+		fl_rect(pxx+x(),pxy+y(), 40,40);
+	}
+	//fl_draw(I.c_str(),x()/2+550,y());
+//	printf("%s",I.c_str());
 }
 
 /**
- *
+ * Visit all data events and 
  */
 void IntensityMap::calculateMaxIntensity(){
 
@@ -56,14 +70,13 @@ void IntensityMap::calculateMaxIntensity(){
 		if(lua_pcall(L_State,3,1,0)!=LUA_OK)
 			printf("error on calling processfunction : %s\n,",
 					lua_tostring(L_State,-1));
-		
+
 		double tmpI = lua_tonumber(L_State,-1);
-		
+
 		if(tmpI > maxIntensity)
 			maxIntensity = tmpI;
-
 		//printf("max I is %f\n", tmpI);
-		}
+	}
 }
 
 /**
