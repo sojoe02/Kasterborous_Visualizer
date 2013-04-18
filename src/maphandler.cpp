@@ -58,6 +58,17 @@ bool MapHandler::parseData(const char* filename){
  * @return number of intensityMaps.
  */
 int MapHandler::binData(int timeStep, const char* L){
+
+	activeIMap = NULL;
+	
+	std::vector<IntensityMap *>::iterator imapItr;
+	for(imapItr = intensityMaps.begin(); imapItr!=intensityMaps.end(); imapItr++){
+		Fl::delete_widget(*imapItr);
+	}
+
+	intensityMaps.clear();	
+	threadmap.clear();
+
 	std::list<Event::dataEvent>::iterator dataItr;
 	int steps = int(dataInfo.tmuAmount / (dataInfo.timeResolution * double(timeStep)) + 0.5);
 	char buffer[50];

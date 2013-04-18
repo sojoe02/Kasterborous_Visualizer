@@ -107,6 +107,7 @@ void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
 	maphandler->setProcessVariables(fname, t, s);
 	if(maphandler->parseData(fname)){
 		ImapAmount = maphandler->binData(stepSizeCounter->value(), "IntensityMap");
+		mapCounter->value(0);
 		mapCounter->bounds(0, ImapAmount-1);
 		double tmp = maphandler->calcMaxIntensityLevels();
 		char buffer[100];
