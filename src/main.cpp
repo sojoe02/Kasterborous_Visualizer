@@ -13,9 +13,12 @@
 #include "event.h"
 #include "ui.h"
 #include "maphandler.h"
+#include "utility.h"
+
+bool Utility::location = true;
+bool Utility::transMarkers = true;
 
 Fl_Window *window;
-
 UI *ui;
 //MapHandler *maphandler;
 //All the callback functions:

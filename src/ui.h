@@ -15,6 +15,7 @@
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Widget.H>
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Check_Button.H>
 
 #include <string>
 #include <mutex>
@@ -39,8 +40,10 @@ class UI
 		void pButton_callback(Fl_Widget *w, MapHandler *m);
 		
 		static void mapCounter_static_callback(Fl_Widget *w, void *f);
-
 		void mapCounter_callback(Fl_Widget *w);
+
+		static void showLocation_static_callback(Fl_Widget *w, void *f);
+		void showLocation_callback(Fl_Widget *w);
 		//const values:
 		static const int UI_X = 1024;
 		static const int UI_Y = 700;
@@ -58,14 +61,17 @@ class UI
 		Fl_Group *dataTab;
 		
 		//Widgets:
+		//Data process widgets:
 		Fl_Hor_Slider *zCounter;
 		Fl_Value_Output *zOutput;
-		Fl_Counter *mapCounter;
 		Fl_Text_Buffer *outputBuffer;
 		Fl_Counter *stepSizeCounter;
 		Fl_Button *processDataButton;
 
-		Fl_Label *datalabel;
+		//Map Widgets:
+		Fl_Check_Button *showLocation; /*<! check button to enable or disable event origin drawing  */
+		Fl_Counter *mapCounter; /*<! counter for controlling currently active map*/
+		//Fl_Label *datalabel; /*<! */
 		Fl_Input *datafile;
 
 		ColorMap *colormap;

@@ -38,6 +38,8 @@ class MapHandler{
 
 		void showIntensityMap(int index);
 
+		void redrawMap();
+
 	private :
 		Event::simInfo dataInfo;
 		std::list<Event::dataEvent> dataEvents;

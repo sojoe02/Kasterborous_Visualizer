@@ -38,7 +38,13 @@ class Utility
 			} else return FL_WHITE;
 		}
 
+		//Draw booleans:
+		static bool location;
+		static bool transMarkers;
+
 };
+
+
 
 
 #endif // UTILITY_H

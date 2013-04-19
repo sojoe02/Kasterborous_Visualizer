@@ -1,12 +1,13 @@
 #ifndef INTENSITYMAP_H
 #define INTENSITYMAP_H
 
-#include <list>
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
 #include "event.h"
 
+#include <list>
 #include <string>
+#include <unordered_map>
 
 #include "lua.hpp"
 #include "lauxlib.h"
@@ -16,7 +17,7 @@
 class IntensityMap : public Fl_Widget
 {
 	public:
-		IntensityMap(Event::simInfo info,int X, int Y, int W, int H, std::string I,const char *L);
+		IntensityMap(std::string msg,Event::simInfo info,int X, int Y, int W, int H,const char *L);
 		void binEvent(Event::dataEvent devent);
 		void calculateIntensityLevels();
 		void normalizeIntensityLevels(double maxValue, double minValue);
@@ -25,6 +26,7 @@ class IntensityMap : public Fl_Widget
 		//find initial proccessing data
 		void calculateMaxIntensity();
 		double getMaxIntensity();
+		void setMaxIntensity(double i);
 
 		//inherited from Fl_Widget:
 		void draw();
@@ -33,12 +35,14 @@ class IntensityMap : public Fl_Widget
 		std::list<Event::dataEvent> dataEvents;
 		std::list<Event::dataEvent>::iterator itDataEvents;
 		
-		std::list<double> intensityLevels;
+		std::unordered_map<std::string, double> intensityLevels; /*<! contains all intensity levels one for each pixel with key "x,y"  */
+
 		std::list<double> normalizedIntensityLevels;	
 		std::list<double>::iterator itIlevels;
 
-		double maxIntensity;
-		std::string I;
+		double maxIntensity; /*<! highest possible intensity level. */
+
+		std::string msg;
 
 		lua_State* L_State;
 		Event::simInfo info;

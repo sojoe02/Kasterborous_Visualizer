@@ -40,24 +40,13 @@ UI::UI(Fl_Window* window)
 	tabs->add(dataTab);
 	tabs->add(mapTab);
 	setupDataTab();
+	setupMapTab();
 
-	/* Then setup the map tab */
-	mapCounter = new Fl_Counter(5, 50, 160, 20, "Active Map:");
-	mapCounter->step(1, 10);
-	mapCounter->bounds(0, 5000);
-	mapCounter->align(FL_ALIGN_TOP_LEFT);
-	mapCounter->callback(mapCounter_static_callback, (void*)this);
-
-	
-	colormap = new ColorMap(5,120,120,window->h() - 170,"Colour Map:"); 
-	colormap->align(FL_ALIGN_TOP_LEFT);
-
-	mapTab->add(colormap);
-	mapTab->add(mapCounter);
 }
 
 
 void UI::printmsg(const char* msg, ...){
+
 	std::lock_guard<std::mutex> lock(printMutex);
 
 	const char *nextStr = NULL;
@@ -72,12 +61,24 @@ void UI::printmsg(const char* msg, ...){
 	}
 	va_end(argp);
 
+
 	//Fl::flush();
 }
-
-
-
 //CALLBACK FUNCTIONS:
+//
+void UI::showLocation_static_callback(Fl_Widget *w, void *f){
+	((UI*)f)->showLocation_callback(w);
+}
+
+void UI::showLocation_callback(Fl_Widget *w){
+	if(Utility::location){
+		Utility::location = false;
+		printmsg("showing locations\n",NULL);
+	}else {Utility::location = true; printmsg("hiding locations\n",NULL);};
+
+	maphandler->redrawMap();		
+}
+
 void UI::mapCounter_static_callback(Fl_Widget *w, void *f){
 	((UI *)f)->mapCounter_callback(w);
 }
@@ -100,6 +101,7 @@ void UI::pButton_static_callback(Fl_Widget *w, void *f){
 }
 
 void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
+	processDataButton->label("processing");
 	output->show_insert_position();	
 	int s = int (stepSizeCounter->value());
 	double t = zCounter->value();
@@ -137,13 +139,34 @@ void UI::setupDataTab(){
 	stepSizeCounter->bounds(1, 5000);
 	stepSizeCounter->value(50);
 	stepSizeCounter->align(FL_ALIGN_TOP_LEFT);
-	
 
-	processDataButton = new Fl_Button(5,ymax-100,200,25,"Process Data");
+	processDataButton = new Fl_Button(20,ymax-100,200,25,"Process Data");
 	processDataButton->callback(pButton_static_callback, (void*)this);
 
 	//output-area:
 	output = new Fl_Text_Display(500,50,450,600,"Output");
 	outputBuffer = new Fl_Text_Buffer();
 	output->buffer(outputBuffer);
+}
+
+void UI::setupMapTab(){
+	/* Then setup the map tab */
+	mapCounter = new Fl_Counter(5, 50, 160, 20, "Active Map:");
+	mapCounter->step(1, 10);
+	mapCounter->bounds(0, 5000);
+	mapCounter->align(FL_ALIGN_TOP_LEFT);
+	mapCounter->callback(mapCounter_static_callback, (void*)this);
+
+	showLocation = new Fl_Check_Button(5,100,100,20, "Show Origins:");
+	showLocation->align(FL_ALIGN_TOP_LEFT);
+	showLocation->callback(showLocation_static_callback, (void*)this);
+	showLocation->set();
+	
+	colormap = new ColorMap(5,200,120,window->h() - 250,"Colour Map:"); 
+	colormap->align(FL_ALIGN_TOP_LEFT);
+
+	mapTab->add(colormap);
+	mapTab->add(mapCounter);
+	mapTab->add(showLocation);
+
 }

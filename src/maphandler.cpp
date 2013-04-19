@@ -76,15 +76,15 @@ int MapHandler::binData(int timeStep, const char* L){
 	ui->printmsg(buffer,NULL);
 	ui->printmsg("Initiating intensity maps\n",NULL);
 	for(int i = 0; i < steps; i++){
-		char buffer2[100];
-		sprintf(buffer2, "Intensity Map from %i[s] to %i[s]", i*timeStep, i*timeStep+timeStep);
+		char buffer2[50];
+		sprintf(buffer2, "Intensity Map %i[s] to %i[s]", i*timeStep, i*timeStep+timeStep);
 		std::string msg = buffer2;
-		IntensityMap* imap = new IntensityMap(dataInfo, 150, 75,
-				mapTab->w()-150, mapTab->h()-75, msg, msg.c_str());
+		//printf("%s : %s\n",buffer2 , msg.c_str());
+		IntensityMap* imap = new IntensityMap(msg,dataInfo, 175, 50,mapTab->w()-200, mapTab->h()-75, "Intensity Map:");
 		mapTab->add(imap);
 		imap->hide();
 		intensityMaps.push_back(imap);
-		imap->align(FL_ALIGN_TOP);
+		imap->align(FL_ALIGN_TOP_LEFT);
 	}		
 
 	//ui->printmsg("Binning events into suitable eventmaps\n");
@@ -138,7 +138,7 @@ double MapHandler::calcMaxIntensityLevels(){
 		delete threads[i];
 	}
 	std::vector<IntensityMap *>::iterator itr = intensityMaps.begin();
-	double i = 0;
+	double ilvl = 0;
 	double tmp = 0;
 
 	for(; itr!= intensityMaps.end(); itr++){
@@ -146,10 +146,15 @@ double MapHandler::calcMaxIntensityLevels(){
 		//sprintf(buffer,"tmp is now %f \n", tmp);
 		//ui->printmsg(buffer,NULL);
 		tmp = (*itr)->getMaxIntensity();
-		if(tmp > i)	
-			i = tmp;	
+		if(tmp > ilvl)	
+			ilvl = tmp;	
 	}
-	return i;
+	
+	std::vector<IntensityMap *>::iterator iItr;
+	for(iItr = intensityMaps.begin(); iItr != intensityMaps.end(); iItr++){
+		(*iItr)->setMaxIntensity(ilvl);
+	}
+	return ilvl;
 }
 
 /**
@@ -161,6 +166,13 @@ void MapHandler::showIntensityMap(int index){
 
 	activeIMap = intensityMaps.at(index);
 	activeIMap->show();	
+}
+
+void MapHandler::redrawMap(){
+	if(activeIMap!=NULL){
+		activeIMap->hide();
+		activeIMap->show();
+	}
 }
 
 /**
