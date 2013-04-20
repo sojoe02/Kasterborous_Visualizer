@@ -36,17 +36,18 @@ IntensityMap::IntensityMap(std::string msg,Event::simInfo info,int X, int Y, int
 	ycf = double(h()) / info.areaY;
 	//printf("%f, %f\n", xcf,ycf);
 	label(msg.c_str());
+
+	resolution = 5;
 }
 
 void IntensityMap::draw(){
 
 	//Fl_Widget::draw();
-
 	fl_color(FL_BLACK);
 	fl_rect(x(),y(),w(),h());
 
 	if(Utility::location){
-		fl_color(FL_BLUE);
+		fl_color(FL_BLACK);
 		//first draw the positions of all active Autons:
 		for(itDataEvents = dataEvents.begin(); itDataEvents != dataEvents.end(); itDataEvents++){
 
@@ -55,12 +56,26 @@ void IntensityMap::draw(){
 
 			int size = 15;
 			for(int i = -size; i < size; i++){
-				if(pxx+x()+i < w()+x())
-					fl_point(pxx+x()+i, pxy+y());
-				if(pxy+y()+i < h()+y() && pxy+y()+i > y())
-					fl_point(pxx+x(), pxy+y()+i);
+				if(pxx+x()+i < w()+x() && pxx+x()+i > x() && pxy+y()-i < y()+h()
+						&& pxy+y()-i > y())
+					fl_point(pxx+x()+i, pxy+y()-i);
+
+				if(pxy+y()+i < h()+y() && pxy+y()+i > y() && pxx+x()+i < x()+w())
+					fl_point(pxx+x()+i, pxy+y()+i);
 			}
 		}
+	}
+
+	if(Utility::sectors){
+		fl_color(FL_WHITE);
+		for(int i = 0; i < w(); i+=resolution){
+			fl_line(x()+i,y(),x()+i,y()+h());
+		}
+		for(int j = 0; j < h(); j+=resolution){
+			fl_line(x(),y()+j, x()+w(), y()+j);
+		}
+
+
 	}
 	//fl_draw(msg.c_str(),msg.length(),x()+w()/2,y()+h());
 	//	printf("%s",I.c_str());
@@ -74,15 +89,15 @@ void IntensityMap::draw(){
 void IntensityMap::calculateMaxIntensity(){
 
 	//initialize the intensityLevel map:
-	for(int i = 0; i < w(); i++){
-		/*for(int j = 0; j < h(); j++){
-		  char buffer[50];
-		  sprintf(buffer, "%i,%i", i, j);
-		  std::string key = buffer;
-		//intensityLevels.insert(std::pair<std::string,double>(key,0));
-		intensityLevels[key] = 0;
-		}*/
-	}
+	//for(int i = 0; i < w(); i++){
+	/*for(int j = 0; j < h(); j++){
+	  char buffer[50];
+	  sprintf(buffer, "%i,%i", i, j);
+	  std::string key = buffer;
+	//intensityLevels.insert(std::pair<std::string,double>(key,0));
+	intensityLevels[key] = 0;
+	}*/
+	//}
 
 	maxIntensity = 0;
 
@@ -90,7 +105,6 @@ void IntensityMap::calculateMaxIntensity(){
 			;itDataEvents++){
 		Event::dataEvent event = *itDataEvents;
 		lua_getglobal(L_State, "processFunction");
-
 		lua_pushnumber(L_State, event.originX);
 		lua_pushnumber(L_State, event.originY);
 		lua_pushstring(L_State, event.table);
@@ -100,11 +114,8 @@ void IntensityMap::calculateMaxIntensity(){
 					lua_tostring(L_State,-1));
 
 		double tmpI = lua_tonumber(L_State,-1);
-
 		if(tmpI > maxIntensity)
 			maxIntensity = tmpI;
-
-
 	}
 }
 
@@ -120,6 +131,53 @@ double IntensityMap::getMaxIntensity(){
 void IntensityMap::setMaxIntensity(double i){
 	maxIntensity = i;
 }
+
+/**
+ * Recursive algorithm which calculates all intensitylevels from origin until a set thresshold.
+ * @param thresshold, minimum Intensity level to be acceptable
+ * @param resolution, number of pixels squared that each intensity level covers.
+ */
+void IntensityMap::calculateIlevel(double thresshold){
+	thresshold = thresshold;
+	resolution = Utility::resolution;
+	//initialize the sectors:i
+	for(int i = 0; i < w(); i+= resolution){
+		for(int j = 0; j < h() + 0.5; j+=resolution){
+			char buffer[40];
+			sprintf(buffer, "%i,%i", i, j);
+			std::string key = buffer;
+			//intensityLevels.insert(std::pair<std::string,double>(key,0));
+			intensityLevels[key] = 0;	
+		}
+	}
+	for(itDataEvents = dataEvents.begin(); itDataEvents != dataEvents.end()
+			;itDataEvents++){
+		Event::dataEvent event = *itDataEvents;
+		lua_getglobal(L_State, "processFunction");
+		lua_pushnumber(L_State, event.originX);
+		lua_pushnumber(L_State, event.originY);
+		lua_pushstring(L_State, event.table);
+
+		if(lua_pcall(L_State,3,1,0)!=LUA_OK)
+			printf("error on calling processfunction : %s\n,",
+					lua_tostring(L_State,-1));
+
+		double tmpI = lua_tonumber(L_State,-1);
+
+		char buffer[40];
+
+		int bx = int(event.originX/resolution +0.5);
+		int by = int(event.originX/resolution +0.5);
+		//find the block:
+		sprintf(buffer,"%i,%i", bx, by);
+		std::string key = buffer;
+		//insert it into the intensitylvl
+		intensityLevels[key] += tmpI; 		
+	}
+
+	//Then do the recursive calls:
+}
+
 
 /**
  * Add an event to for this IntensityMap.

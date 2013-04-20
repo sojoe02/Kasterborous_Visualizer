@@ -40,7 +40,9 @@ class Utility
 
 		//Draw booleans:
 		static bool location;
+		static bool sectors;
 		static bool transMarkers;
+		static int resolution;
 
 };
 

@@ -44,6 +44,14 @@ class UI
 
 		static void showLocation_static_callback(Fl_Widget *w, void *f);
 		void showLocation_callback(Fl_Widget *w);
+
+		static void showGrid_static_callback(Fl_Widget *w, void *f);
+		void showGrid_callback(Fl_Widget *w);
+
+		static void resSlide_static_callback(Fl_Widget *w, void *f);
+		void resSlide_callback(Fl_Widget *w);
+
+		
 		//const values:
 		static const int UI_X = 1024;
 		static const int UI_Y = 700;
@@ -67,9 +75,12 @@ class UI
 		Fl_Text_Buffer *outputBuffer;
 		Fl_Counter *stepSizeCounter;
 		Fl_Button *processDataButton;
+		Fl_Hor_Slider *resSlide;
+		Fl_Value_Output *resOutput;
 
 		//Map Widgets:
 		Fl_Check_Button *showLocation; /*<! check button to enable or disable event origin drawing  */
+		Fl_Check_Button *showGrid; /*<! check button to enable sector grid in map drawing*/
 		Fl_Counter *mapCounter; /*<! counter for controlling currently active map*/
 		//Fl_Label *datalabel; /*<! */
 		Fl_Input *datafile;

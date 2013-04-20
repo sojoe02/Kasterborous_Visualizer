@@ -79,6 +79,18 @@ void UI::showLocation_callback(Fl_Widget *w){
 	maphandler->redrawMap();		
 }
 
+void UI::showGrid_static_callback(Fl_Widget *w, void *f){
+	((UI*)f)->showGrid_callback(w);
+}
+
+void UI::showGrid_callback(Fl_Widget *w){
+	if(Utility::sectors){
+		Utility::sectors = false;
+	} else Utility::sectors = true;
+
+	maphandler->redrawMap();
+}
+
 void UI::mapCounter_static_callback(Fl_Widget *w, void *f){
 	((UI *)f)->mapCounter_callback(w);
 }
@@ -95,6 +107,17 @@ void UI::zChanged_static_callback(Fl_Widget *w, void *f){
 void UI::zChanged_callback(Fl_Widget *w){	
 	zOutput->value(zCounter->value());
 }
+
+void UI::resSlide_static_callback(Fl_Widget *w, void *f){
+	((UI *)f)->resSlide_callback(w);	
+}
+
+void UI::resSlide_callback(Fl_Widget *w){
+	Utility::resolution = resSlide->value();
+	resOutput->value(resSlide->value());
+
+}
+
 
 void UI::pButton_static_callback(Fl_Widget *w, void *f){
 	((UI *)f)->pButton_callback(w, ((UI *)f)->maphandler);
@@ -130,17 +153,26 @@ void UI::setupDataTab(){
 	zOutput = new Fl_Value_Output(205, 50, 100, 25, "");
 	zCounter->align(FL_ALIGN_TOP_LEFT);
 
+	resSlide = new Fl_Hor_Slider(5,100,200,25, "Resolution:");
+	resSlide->bounds(1,99);
+	resSlide->step(2);
+	resSlide->callback(resSlide_static_callback, (void*)this);
+	resOutput = new Fl_Value_Output(205,100,100,25,"");
+	resSlide->align(FL_ALIGN_TOP_LEFT);
+	resSlide->value(Utility::resolution);
+	resOutput->value(Utility::resolution);
+
 	datafile = new Fl_Input(5,150, 350,25,"Filename:");
 	datafile->insert("savefile.kas");
 	datafile->align(FL_ALIGN_TOP_LEFT);
 
-	stepSizeCounter = new Fl_Counter(5,100,200,25,"Step Size:");
+	stepSizeCounter = new Fl_Counter(5,200,200,25,"Step Size:");
 	stepSizeCounter->step(1,10);
 	stepSizeCounter->bounds(1, 5000);
 	stepSizeCounter->value(50);
 	stepSizeCounter->align(FL_ALIGN_TOP_LEFT);
 
-	processDataButton = new Fl_Button(20,ymax-100,200,25,"Process Data");
+	processDataButton = new Fl_Button(5,ymax-100,200,25,"Process Data");
 	processDataButton->callback(pButton_static_callback, (void*)this);
 
 	//output-area:
@@ -161,6 +193,10 @@ void UI::setupMapTab(){
 	showLocation->align(FL_ALIGN_TOP_LEFT);
 	showLocation->callback(showLocation_static_callback, (void*)this);
 	showLocation->set();
+
+	showGrid = new Fl_Check_Button(5,150,100,20, "show Sector Grid:");
+	showGrid->align(FL_ALIGN_TOP_LEFT);
+	showGrid->callback(showGrid_static_callback, (void*)this);
 	
 	colormap = new ColorMap(5,200,120,window->h() - 250,"Colour Map:"); 
 	colormap->align(FL_ALIGN_TOP_LEFT);
@@ -168,5 +204,6 @@ void UI::setupMapTab(){
 	mapTab->add(colormap);
 	mapTab->add(mapCounter);
 	mapTab->add(showLocation);
+	mapTab->add(showGrid);
 
 }

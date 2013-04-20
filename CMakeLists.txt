@@ -23,18 +23,19 @@ set (GENERAL
 	src/maphandler.h
 	)
 
-set (WIDGET
+set (WIDGETS
 	src/widgets/colormap.cpp
 	src/widgets/colormap.h
 	src/widgets/intensitymap.cpp
 	src/widgets/intensitymap.h
-
+	src/widgets/iblock.cpp
+	src/widgets/iblock.h
 	)
 #------------------------------------------------
 #Set subdirectories:
 #------------------------------------------------
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets)
-add_executable(kast_vis ${GENERAL} ${WIDGET})
+add_executable(kast_vis ${GENERAL} ${WIDGETS})
 #------------------------------------------------
 #Handle LUA implementation:
 #------------------------------------------------

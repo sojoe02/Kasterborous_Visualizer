@@ -17,6 +17,8 @@
 
 bool Utility::location = true;
 bool Utility::transMarkers = true;
+bool Utility::sectors = false;
+int Utility::resolution = 5;
 
 Fl_Window *window;
 UI *ui;

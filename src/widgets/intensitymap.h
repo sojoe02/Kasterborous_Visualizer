@@ -3,8 +3,6 @@
 
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
-#include "event.h"
-
 #include <list>
 #include <string>
 #include <unordered_map>
@@ -13,13 +11,18 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
+#include "event.h"
+#include "iblock.h"
+
+
 
 class IntensityMap : public Fl_Widget
 {
 	public:
 		IntensityMap(std::string msg,Event::simInfo info,int X, int Y, int W, int H,const char *L);
 		void binEvent(Event::dataEvent devent);
-		void calculateIntensityLevels();
+		void calculateIlevel(double thresshold);
+		void recursiveIlevelCalc(int Xpx, int Ypx);
 		void normalizeIntensityLevels(double maxValue, double minValue);
 		void showMap();
 
@@ -48,7 +51,9 @@ class IntensityMap : public Fl_Widget
 		Event::simInfo info;
 		double xcf; /*<! conversion x px to area width*/
 		double ycf; /*<! conversion y px to area height */
-		
+
+		double thresshold;
+		int resolution;		
 
 };	
 
