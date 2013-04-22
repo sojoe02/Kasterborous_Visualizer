@@ -71,10 +71,9 @@ void UI::showLocation_static_callback(Fl_Widget *w, void *f){
 }
 
 void UI::showLocation_callback(Fl_Widget *w){
-	if(Utility::location){
-		Utility::location = false;
-		printmsg("showing locations\n",NULL);
-	}else {Utility::location = true; printmsg("hiding locations\n",NULL);};
+	if(Utility::show_Location){
+		Utility::show_Location = false;
+	}else Utility::show_Location = true; 
 
 	maphandler->redrawMap();		
 }
@@ -84,9 +83,9 @@ void UI::showGrid_static_callback(Fl_Widget *w, void *f){
 }
 
 void UI::showGrid_callback(Fl_Widget *w){
-	if(Utility::sectors){
-		Utility::sectors = false;
-	} else Utility::sectors = true;
+	if(Utility::show_SectorGrid){
+		Utility::show_SectorGrid = false;
+	} else Utility::show_SectorGrid = true;
 
 	maphandler->redrawMap();
 }
@@ -198,7 +197,7 @@ void UI::setupMapTab(){
 	showGrid->align(FL_ALIGN_TOP_LEFT);
 	showGrid->callback(showGrid_static_callback, (void*)this);
 	
-	colormap = new ColorMap(5,200,120,window->h() - 250,"Colour Map:"); 
+	colormap = new ColorMap(5,200,120,window->h() - 350,"Colour Map:"); 
 	colormap->align(FL_ALIGN_TOP_LEFT);
 
 	mapTab->add(colormap);

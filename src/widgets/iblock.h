@@ -27,14 +27,20 @@
 class IBlock : public Fl_Button
 {
 	public:
-		IBlock(double intensityLvl,std::string msg,
-				int X, int Y, int W, int H, const char *L);
+		IBlock(int X, int Y, int W, int H, const char *L);
 		
 		void draw();
 
+		/**
+		 * Add an intensity level 
+		 */
+		void addIntensityLevel(double ilvl);
+
 	private:
-		double intensityLvl;
-		std::string msg;
+		double cumulativeIlvl;
+		int frequency;
+		double averageIlvl;
+		
 
 };	
 

@@ -1,23 +1,18 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
-#include <FL/Fl_Box.H>
-#include <FL/Fl_Value_Slider.H>
-#include <FL/Fl_Hor_Slider.H>
-#include <FL/Fl_Counter.H>
-#include <FL/Fl_Value_Output.H>
-#include <FL/Fl_Tabs.H>
-#include <FL/Fl_Group.H>
-#include <FL/Fl_Text_Display.H>
-#include <FL/Fl_Text_Buffer.H>
 
 #include "event.h"
 #include "ui.h"
 #include "maphandler.h"
 #include "utility.h"
 
-bool Utility::location = true;
-bool Utility::transMarkers = true;
-bool Utility::sectors = false;
+
+bool Utility::show_Location = true;
+bool Utility::show_SectorGrid = false;
+bool Utility::show_CumulativeILevels = false;
+bool Utility::show_Frequency = false;
+bool Utility::show_AverageIlevels = false;
+
 int Utility::resolution = 5;
 
 Fl_Window *window;

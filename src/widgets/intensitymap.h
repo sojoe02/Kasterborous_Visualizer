@@ -6,6 +6,7 @@
 #include <list>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "lua.hpp"
 #include "lauxlib.h"
@@ -22,7 +23,7 @@ class IntensityMap : public Fl_Widget
 		IntensityMap(std::string msg,Event::simInfo info,int X, int Y, int W, int H,const char *L);
 		void binEvent(Event::dataEvent devent);
 		void calculateIlevel(double thresshold);
-		void recursiveIlevelCalc(int Xpx, int Ypx);
+		void recursiveIlevelCalc(int Xpx, int Ypx, std::string key, Event::dataEvent event);
 		void normalizeIntensityLevels(double maxValue, double minValue);
 		void showMap();
 
@@ -36,9 +37,11 @@ class IntensityMap : public Fl_Widget
 
 	private:
 		std::list<Event::dataEvent> dataEvents;
-		std::list<Event::dataEvent>::iterator itDataEvents;
+		std::list<Event::dataEvent>::iterator dataItr;
 		
-		std::unordered_map<std::string, double> intensityLevels; /*<! contains all intensity levels one for each pixel with key "x,y"  */
+		//std::unordered_map<std::string>::iterator iBlockItr;
+		std::unordered_map<std::string, IBlock*> iBlocks; /*<! contains all iBlocks @see IBlock one for each pixel*resolution with key "x,y"  */
+		std::unordered_set<std::string> visitedBlocks;
 
 		std::list<double> normalizedIntensityLevels;	
 		std::list<double>::iterator itIlevels;

@@ -46,13 +46,24 @@ void IntensityMap::draw(){
 	fl_color(FL_BLACK);
 	fl_rect(x(),y(),w(),h());
 
-	if(Utility::location){
+	if(Utility::show_SectorGrid){
+		fl_color(FL_WHITE);
+		for(int i = 0; i < w(); i+=resolution){
+			fl_line(x()+i,y(),x()+i,y()+h());
+		}
+		for(int j = 0; j < h(); j+=resolution){
+			fl_line(x(),y()+j, x()+w(), y()+j);
+		}
+	}
+
+
+	if(Utility::show_Location){
 		fl_color(FL_BLACK);
 		//first draw the positions of all active Autons:
-		for(itDataEvents = dataEvents.begin(); itDataEvents != dataEvents.end(); itDataEvents++){
+		for(dataItr = dataEvents.begin(); dataItr != dataEvents.end(); dataItr++){
 
-			int pxx = int((*itDataEvents).originX * xcf); 
-			int pxy = int((*itDataEvents).originY * ycf);
+			int pxx = int((*dataItr).originX * xcf); 
+			int pxy = int((*dataItr).originY * ycf);
 
 			int size = 15;
 			for(int i = -size; i < size; i++){
@@ -66,17 +77,6 @@ void IntensityMap::draw(){
 		}
 	}
 
-	if(Utility::sectors){
-		fl_color(FL_WHITE);
-		for(int i = 0; i < w(); i+=resolution){
-			fl_line(x()+i,y(),x()+i,y()+h());
-		}
-		for(int j = 0; j < h(); j+=resolution){
-			fl_line(x(),y()+j, x()+w(), y()+j);
-		}
-
-
-	}
 	//fl_draw(msg.c_str(),msg.length(),x()+w()/2,y()+h());
 	//	printf("%s",I.c_str());
 }
@@ -87,24 +87,25 @@ void IntensityMap::draw(){
  * This is assumed to be maximum intensity level. The higest found will be saved on * the in the maxIntensity variable. 
  */
 void IntensityMap::calculateMaxIntensity(){
-
-	//initialize the intensityLevel map:
-	//for(int i = 0; i < w(); i++){
-	/*for(int j = 0; j < h(); j++){
-	  char buffer[50];
-	  sprintf(buffer, "%i,%i", i, j);
-	  std::string key = buffer;
-	//intensityLevels.insert(std::pair<std::string,double>(key,0));
-	intensityLevels[key] = 0;
-	}*/
-	//}
-
+	//initialize all the iblocks!
+	for(int i = 0; i < w()+resolution; i+=resolution){
+		for(int j = 0; j < h()+resolution; j+=resolution){
+			char buffer[40];
+			sprintf(buffer, "%i,%i", i, j);
+			IBlock *iblock = new IBlock(i+x(),j+y(),resolution,resolution,"");
+			iblock->hide();
+			std::string key = buffer;
+			//iBlocks.insert(std::pair<std::string,IBlock>(key,iblock));
+			iBlocks[key] = iblock;	
+		}
+	}
 	maxIntensity = 0;
 
-	for(itDataEvents = dataEvents.begin(); itDataEvents != dataEvents.end()
-			;itDataEvents++){
-		Event::dataEvent event = *itDataEvents;
+	for(dataItr = dataEvents.begin(); dataItr != dataEvents.end()
+			;dataItr++){
+		Event::dataEvent event = *dataItr;
 		lua_getglobal(L_State, "processFunction");
+
 		lua_pushnumber(L_State, event.originX);
 		lua_pushnumber(L_State, event.originY);
 		lua_pushstring(L_State, event.table);
@@ -128,6 +129,10 @@ double IntensityMap::getMaxIntensity(){
 	return maxIntensity;
 }
 
+/**
+ * Set maximum intensity level reached for each event origin.
+ * @param i, maximum intensity level
+ */
 void IntensityMap::setMaxIntensity(double i){
 	maxIntensity = i;
 }
@@ -140,42 +145,80 @@ void IntensityMap::setMaxIntensity(double i){
 void IntensityMap::calculateIlevel(double thresshold){
 	thresshold = thresshold;
 	resolution = Utility::resolution;
-	//initialize the sectors:i
-	for(int i = 0; i < w(); i+= resolution){
-		for(int j = 0; j < h() + 0.5; j+=resolution){
-			char buffer[40];
-			sprintf(buffer, "%i,%i", i, j);
-			std::string key = buffer;
-			//intensityLevels.insert(std::pair<std::string,double>(key,0));
-			intensityLevels[key] = 0;	
-		}
-	}
-	for(itDataEvents = dataEvents.begin(); itDataEvents != dataEvents.end()
-			;itDataEvents++){
-		Event::dataEvent event = *itDataEvents;
-		lua_getglobal(L_State, "processFunction");
-		lua_pushnumber(L_State, event.originX);
-		lua_pushnumber(L_State, event.originY);
-		lua_pushstring(L_State, event.table);
-
-		if(lua_pcall(L_State,3,1,0)!=LUA_OK)
-			printf("error on calling processfunction : %s\n,",
-					lua_tostring(L_State,-1));
-
-		double tmpI = lua_tonumber(L_State,-1);
-
-		char buffer[40];
-
-		int bx = int(event.originX/resolution +0.5);
-		int by = int(event.originX/resolution +0.5);
-		//find the block:
-		sprintf(buffer,"%i,%i", bx, by);
-		std::string key = buffer;
-		//insert it into the intensitylvl
-		intensityLevels[key] += tmpI; 		
-	}
 
 	//Then do the recursive calls:
+	for(dataItr = dataEvents.begin(); dataItr != dataEvents.end()
+			;dataItr++){
+		char buffer[40];
+
+		Event::dataEvent event = *dataItr;
+		sprintf(buffer,"%i,%i",int(event.originX*xcf), int(event.originY*ycf));
+		std::string new_key = buffer;
+		visitedBlocks.insert(msg);
+
+		recursiveIlevelCalc(event.originX*xcf,event.originY*ycf,new_key,
+				*dataItr);
+		visitedBlocks.clear();
+	}
+}
+
+
+/**
+ * Recursive call to calculate all intensitylvls above thresshold.
+ * This function will visist all unvisited neighboring intensity blocks
+ * calculate the intensity level for the event in question at intensityblocks location and
+ * add that intensity level to the block.
+ * @param Xpx, x pixel value.
+ * @param Ypx, y pixel value.
+ * @param key, hash map key which is "Xpx,Ypx" string.
+ * @param event, the data event in question.
+ */
+void IntensityMap::recursiveIlevelCalc(int Xpx, int Ypx, std::string key, Event::dataEvent event){
+
+	lua_getglobal(L_State, "processFunction");
+	lua_pushnumber(L_State, double(Xpx)/xcf);
+	lua_pushnumber(L_State, double(Ypx)/ycf);
+	lua_pushstring(L_State, event.table);
+
+	if(lua_pcall(L_State,3,1,0)!=LUA_OK)
+		printf("error on calling processfunction : %s\n,",
+				lua_tostring(L_State,-1));
+
+	double tmpI = lua_tonumber(L_State,-1);
+
+	iBlocks.find(key)->second->addIntensityLevel(tmpI);
+	
+	if(tmpI > thresshold){
+		//Go East:
+		char buffer[40];
+		sprintf(buffer,"%i,%i", Xpx+resolution, Ypx);
+		std::string new_key = buffer;
+		if(visitedBlocks.find(new_key) == visitedBlocks.end() && (Xpx+resolution) < w()){
+			visitedBlocks.insert(new_key);
+			recursiveIlevelCalc(Xpx+resolution, Ypx, new_key,event);
+		}
+		//Go West:
+		sprintf(buffer,"%i,%i",Xpx-resolution,Ypx);
+		new_key = buffer;
+		if(visitedBlocks.find(new_key) == visitedBlocks.end() && (Xpx-resolution) > 0){
+			visitedBlocks.insert(new_key);
+			recursiveIlevelCalc(Xpx-resolution, Ypx, new_key,event);
+		}
+		//Go South:
+		sprintf(buffer,"%i,%i",Xpx,Ypx+resolution);
+		new_key = buffer;
+		if(visitedBlocks.find(new_key) == visitedBlocks.end() && (Ypx+resolution) < h()){
+			visitedBlocks.insert(new_key);
+			recursiveIlevelCalc(Xpx, Ypx-resolution, new_key,event);
+		}
+		//Go North:
+		sprintf(buffer, "%i,%i",Xpx,Ypx-resolution);
+		new_key = buffer;
+		if(visitedBlocks.find(new_key) == visitedBlocks.end() && (Ypx-resolution) > 0){
+			visitedBlocks.insert(new_key);
+			recursiveIlevelCalc(Xpx, Ypx+resolution, new_key,event);
+		}
+	}
 }
 
 
