@@ -1,5 +1,6 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
+#include <mutex>
 
 #include "event.h"
 #include "ui.h"
@@ -9,9 +10,15 @@
 
 bool Utility::show_Location = true;
 bool Utility::show_SectorGrid = false;
-bool Utility::show_CumulativeILevels = false;
-bool Utility::show_Frequency = false;
-bool Utility::show_AverageIlevels = false;
+
+double Utility::max_cumulativeIlvl = 0;
+double Utility::max_frequency = 0;
+double Utility::max_averageIlvl = 0;
+double Utility::min_cumulativeIlvl = 0;
+double Utility::min_frequency = 0;
+double Utility::min_averageIlvl = 0;
+
+std::mutex Utility::utilityMutex;
 
 int Utility::resolution = 5;
 

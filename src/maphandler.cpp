@@ -164,8 +164,12 @@ void MapHandler::showIntensityMap(int index){
 	if(activeIMap != NULL)
 		activeIMap->hide();
 
-	activeIMap = intensityMaps.at(index);
-	activeIMap->show();	
+	if(!intensityMaps.empty()){
+		activeIMap = intensityMaps.at(index);
+		activeIMap->show();
+	}
+
+
 }
 
 void MapHandler::redrawMap(){
@@ -195,13 +199,13 @@ void MapHandler::calculateMaxIData(MapHandler *m, std::vector<IntensityMap*> ida
  * @see MapHandler::calculateIData
  * 
  */
-void MapHandler::calcIntensityLevels(){
+void MapHandler::calcIntensityLevels(double thresshold){
 	ui->printmsg("calculating intensity levels\n", NULL);
 
 	std::thread* threads[threadAmount];
 
 	for(int i = 0; i < threadAmount; i++){
-		threads[i] = new std::thread(calculateIData, this, threadmap.at(i));
+		threads[i] = new std::thread(calculateIData, this, threadmap.at(i),thresshold);
 	}
 	for(int i = 0; i< threadAmount; i++){
 		threads[i]->join();
@@ -215,10 +219,10 @@ void MapHandler::calcIntensityLevels(){
  * @param m pointer to this maphandler
  * @param idata vector containing a chunk of the active Intensitymap widgets
  */
-void MapHandler::calculateIData(MapHandler* m, std::vector<IntensityMap*> idata){
+void MapHandler::calculateIData(MapHandler* m, std::vector<IntensityMap*> idata, double thresshold){
 	std::vector<IntensityMap*>::iterator idtr;
 	for(idtr = idata.begin(); idtr != idata.end(); idtr++){
-		//(*idtr)->calculateMapValues();
+		(*idtr)->calculateIlevel(thresshold);
 	}	
 }
 

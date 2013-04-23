@@ -59,6 +59,6 @@ target_link_libraries(kast_vis fltk)
 #------------------------------------------------
 #Set compiler flags
 #------------------------------------------------
-set(CMAKE_CXX_FLAGS "-pthread -std=c++11")
+set(CMAKE_CXX_FLAGS "-O2 -pthread -std=c++11")
 
 

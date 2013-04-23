@@ -24,8 +24,16 @@ IBlock::IBlock(int X, int Y, int W, int H, const char *L)
 	}
 
 void IBlock::draw(){
+	int state = Utility::map_StateMachine();	
 
-	//fl_color(Utility::thressToRainbow(intensityLvl));
+	if(state = Utility::map_Cumulative){
+		fl_color(Utility::getCumulativeColor
+				(cumulativeIlvl));
+	}else if(state = Utility::map_Freq){
+		fl_color(Utility::getFreqColor(frequency));
+	}else if(state = Utility::map_Average){
+		fl_color(Utility::getAvgColor(averageIlvl));
+	}
 
 	for(int i = 0; i<h();i++){
 		fl_line(x(),y()+i,w(),h());
@@ -36,4 +44,13 @@ void IBlock::addIntensityLevel(double ilvl){
 	frequency++;
 	cumulativeIlvl += ilvl;
 	averageIlvl = cumulativeIlvl / double(frequency);	
+}
+
+/**
+ * Retrieve block values in an array;
+ */
+void IBlock::getBlockValues(double &c, double &f, double &a){
+	c= cumulativeIlvl;
+	f= frequency;
+	a= averageIlvl;
 }

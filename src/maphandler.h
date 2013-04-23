@@ -29,9 +29,9 @@ class MapHandler{
 		 * Do rekursive calculations on every intensityMap.
 		 */
 		void findOriginPositions();
-		void calcIntensityLevels();
+		void calcIntensityLevels(double thresshold);
 		double calcMaxIntensityLevels();
-		static void calculateIData(MapHandler *m, std::vector<IntensityMap*> idata);
+		static void calculateIData(MapHandler *m, std::vector<IntensityMap*> idata, double thresshold);
 		static void calculateMaxIData(MapHandler *m, std::vector<IntensityMap*> idata);
 
 		UI *ui;

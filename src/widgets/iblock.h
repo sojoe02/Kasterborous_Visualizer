@@ -35,10 +35,12 @@ class IBlock : public Fl_Button
 		 * Add an intensity level 
 		 */
 		void addIntensityLevel(double ilvl);
+		void getBlockValues(double &c, double &f,
+				double &a);
 
 	private:
 		double cumulativeIlvl;
-		int frequency;
+		double frequency;
 		double averageIlvl;
 		
 

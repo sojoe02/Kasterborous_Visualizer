@@ -66,9 +66,26 @@ void UI::printmsg(const char* msg, ...){
 }
 //CALLBACK FUNCTIONS:
 //
-void UI::showLocation_static_callback(Fl_Widget *w, void *f){
-	((UI*)f)->showLocation_callback(w);
+
+void UI::showFreq_callback(Fl_Widget *w){
+	showCumulative->value(0);
+	showAverage->value(0);
+	Utility::map_StateMachine(Utility::map_Freq);
 }
+
+void UI::showCumulative_callback(Fl_Widget *w){
+	showFreq->value(0);
+	showAverage->value(0);
+	Utility::map_StateMachine(Utility::map_Cumulative);
+}
+
+void UI::showAverage_callback(Fl_Widget *w){
+	showCumulative->value(0);
+	showFreq->value(0);
+	Utility::map_StateMachine(Utility::map_Average);
+
+}
+
 
 void UI::showLocation_callback(Fl_Widget *w){
 	if(Utility::show_Location){
@@ -78,9 +95,6 @@ void UI::showLocation_callback(Fl_Widget *w){
 	maphandler->redrawMap();		
 }
 
-void UI::showGrid_static_callback(Fl_Widget *w, void *f){
-	((UI*)f)->showGrid_callback(w);
-}
 
 void UI::showGrid_callback(Fl_Widget *w){
 	if(Utility::show_SectorGrid){
@@ -107,16 +121,10 @@ void UI::zChanged_callback(Fl_Widget *w){
 	zOutput->value(zCounter->value());
 }
 
-void UI::resSlide_static_callback(Fl_Widget *w, void *f){
-	((UI *)f)->resSlide_callback(w);	
-}
-
 void UI::resSlide_callback(Fl_Widget *w){
 	Utility::resolution = resSlide->value();
 	resOutput->value(resSlide->value());
-
 }
-
 
 void UI::pButton_static_callback(Fl_Widget *w, void *f){
 	((UI *)f)->pButton_callback(w, ((UI *)f)->maphandler);
@@ -140,6 +148,11 @@ void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
 		zCounter->bounds(0, tmp);
 		zCounter->step(tmp/100);
 	} else printmsg(fname, " not found", NULL);
+	calculateIButton->show();
+}
+
+void UI::calculateIButton_callback(Fl_Widget *w){
+	maphandler->calcIntensityLevels(zCounter->value());
 }
 
 //SETUP FUNCTIONS:
@@ -171,8 +184,12 @@ void UI::setupDataTab(){
 	stepSizeCounter->value(50);
 	stepSizeCounter->align(FL_ALIGN_TOP_LEFT);
 
-	processDataButton = new Fl_Button(5,ymax-100,200,25,"Process Data");
+	processDataButton = new Fl_Button(5,ymax-100,150,25,"Process Data");
 	processDataButton->callback(pButton_static_callback, (void*)this);
+
+	calculateIButton = new Fl_Button(175,ymax-100,150,25,"Calc I Levels");
+	calculateIButton->callback(calculateIButton_static_callback, (void*)this);
+	calculateIButton->hide();
 
 	//output-area:
 	output = new Fl_Text_Display(500,50,450,600,"Output");
@@ -188,21 +205,38 @@ void UI::setupMapTab(){
 	mapCounter->align(FL_ALIGN_TOP_LEFT);
 	mapCounter->callback(mapCounter_static_callback, (void*)this);
 
-	showLocation = new Fl_Check_Button(5,100,100,20, "Show Origins:");
+	showLocation = new Fl_Check_Button(5,100,100,20, "Origins:");
 	showLocation->align(FL_ALIGN_TOP_LEFT);
 	showLocation->callback(showLocation_static_callback, (void*)this);
 	showLocation->set();
 
-	showGrid = new Fl_Check_Button(5,150,100,20, "show Sector Grid:");
+	showGrid = new Fl_Check_Button(5,140,100,20, "Block Grid:");
 	showGrid->align(FL_ALIGN_TOP_LEFT);
 	showGrid->callback(showGrid_static_callback, (void*)this);
+
+	showCumulative = new Fl_Check_Button(5,180,100,20, "Cumulative");
+	showCumulative->align(FL_ALIGN_TOP_LEFT);
+	showCumulative->callback(showCumulative_static_callback, (void*)this);
+
+	showAverage = new Fl_Check_Button(5,220,100,20, "Average");
+	showAverage->align(FL_ALIGN_TOP_LEFT);
+	showAverage->callback(showAverage_static_callback, (void*)this);
+	showAverage->set();
+	Utility::map_StateMachine(Utility::map_Average);
+
+	showFreq = new Fl_Check_Button(5,260,100,20, "Frequency:");
+	showFreq->align(FL_ALIGN_TOP_LEFT);
+	showFreq->callback(showFreq_static_callback, (void*)this);
 	
-	colormap = new ColorMap(5,200,120,window->h() - 350,"Colour Map:"); 
+	colormap = new ColorMap(5,300,120,300,"Colour Values:"); 
 	colormap->align(FL_ALIGN_TOP_LEFT);
 
 	mapTab->add(colormap);
 	mapTab->add(mapCounter);
 	mapTab->add(showLocation);
 	mapTab->add(showGrid);
+	mapTab->add(showFreq);
+	mapTab->add(showAverage);
+	mapTab->add(showCumulative);
 
 }

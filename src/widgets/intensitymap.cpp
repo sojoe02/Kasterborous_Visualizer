@@ -91,12 +91,13 @@ void IntensityMap::calculateMaxIntensity(){
 	for(int i = 0; i < w()+resolution; i+=resolution){
 		for(int j = 0; j < h()+resolution; j+=resolution){
 			char buffer[40];
-			sprintf(buffer, "%i,%i", i, j);
+			sprintf(buffer, "%i,%i", i/resolution, j/resolution);
 			IBlock *iblock = new IBlock(i+x(),j+y(),resolution,resolution,"");
 			iblock->hide();
 			std::string key = buffer;
 			//iBlocks.insert(std::pair<std::string,IBlock>(key,iblock));
-			iBlocks[key] = iblock;	
+			iBlocks[key] = iblock;
+			//printf("%s\n",buffer);	
 		}
 	}
 	maxIntensity = 0;
@@ -146,20 +147,51 @@ void IntensityMap::calculateIlevel(double thresshold){
 	thresshold = thresshold;
 	resolution = Utility::resolution;
 
+	printf("Do recursive call till' thresshold is met\n");
+
 	//Then do the recursive calls:
 	for(dataItr = dataEvents.begin(); dataItr != dataEvents.end()
 			;dataItr++){
 		char buffer[40];
 
 		Event::dataEvent event = *dataItr;
-		sprintf(buffer,"%i,%i",int(event.originX*xcf), int(event.originY*ycf));
+		sprintf(buffer,"%i,%i",int(event.originX*xcf/resolution), int(event.originY*ycf/resolution));
 		std::string new_key = buffer;
-		visitedBlocks.insert(msg);
+		visitedBlocks.insert(new_key);	
 
 		recursiveIlevelCalc(event.originX*xcf,event.originY*ycf,new_key,
 				*dataItr);
 		visitedBlocks.clear();
+		Fl::flush();
+		//printf("next event\n");
 	}
+
+	printf("Calculating min and max values\n");
+
+	std::unordered_map<std::string,IBlock*>::iterator itr;
+
+	double c_max = 0;
+	double a_max = 0;
+	double f_max = 0;
+	double f_min = 1E+37;
+	double a_min = 1E+37;
+	double c_min = 1E+37;
+
+	for(itr = iBlocks.begin(); itr !=iBlocks.end(); itr++){
+		double a,c,f;
+		(*itr).second->getBlockValues(c,f,a);
+		if(c_max < c) c_max = c;
+		if(a_max < a) a_max = a;
+		if(f_max < f) f_max = f;
+		if(c_min > c) c_min = c;
+		if(a_min > a) a_min = a;
+		if(f_min > f) f_min = f;			
+	}
+
+	double values[] = {c_max,f_max,a_max,
+			c_min,f_min,a_min};
+
+	Utility::addMaxMinValues(values);
 }
 
 
@@ -174,6 +206,7 @@ void IntensityMap::calculateIlevel(double thresshold){
  * @param event, the data event in question.
  */
 void IntensityMap::recursiveIlevelCalc(int Xpx, int Ypx, std::string key, Event::dataEvent event){
+	lua_settop(L_State,0);
 
 	lua_getglobal(L_State, "processFunction");
 	lua_pushnumber(L_State, double(Xpx)/xcf);
@@ -185,38 +218,49 @@ void IntensityMap::recursiveIlevelCalc(int Xpx, int Ypx, std::string key, Event:
 				lua_tostring(L_State,-1));
 
 	double tmpI = lua_tonumber(L_State,-1);
+	//printf("%s \n", key.c_str());
+	//
+	//std::unordered_map<std::string,IBlock*>::const_iterator got = iBlocks.find(key);
 
-	iBlocks.find(key)->second->addIntensityLevel(tmpI);
-	
-	if(tmpI > thresshold){
+	//if(got == iBlocks.end()){
+		//printf ("%s, stopping crashing", key.c_str());
+	//}
+
+	//iBlocks.find(key)->second->addIntensityLevel(0);
+		
+	if(Xpx-resolution != 0 && Ypx-resolution != 0 && Xpx != 0 && Ypx != 0){
 		//Go East:
 		char buffer[40];
-		sprintf(buffer,"%i,%i", Xpx+resolution, Ypx);
+		sprintf(buffer,"%i,%i", (Xpx+resolution)/resolution, (Ypx)/resolution);
 		std::string new_key = buffer;
 		if(visitedBlocks.find(new_key) == visitedBlocks.end() && (Xpx+resolution) < w()){
 			visitedBlocks.insert(new_key);
 			recursiveIlevelCalc(Xpx+resolution, Ypx, new_key,event);
 		}
 		//Go West:
-		sprintf(buffer,"%i,%i",Xpx-resolution,Ypx);
+		sprintf(buffer,"%i,%i",(Xpx-resolution)/resolution,(Ypx)/resolution);
 		new_key = buffer;
 		if(visitedBlocks.find(new_key) == visitedBlocks.end() && (Xpx-resolution) > 0){
 			visitedBlocks.insert(new_key);
 			recursiveIlevelCalc(Xpx-resolution, Ypx, new_key,event);
 		}
 		//Go South:
-		sprintf(buffer,"%i,%i",Xpx,Ypx+resolution);
-		new_key = buffer;
+		sprintf(buffer,"%i,%i",(Xpx)/resolution,(Ypx+resolution)/resolution);
+		std::string south_key(std::to_string(Xpx/resolution));
 		if(visitedBlocks.find(new_key) == visitedBlocks.end() && (Ypx+resolution) < h()){
 			visitedBlocks.insert(new_key);
-			recursiveIlevelCalc(Xpx, Ypx-resolution, new_key,event);
+			recursiveIlevelCalc(Xpx, Ypx+resolution, new_key,event);
 		}
 		//Go North:
-		sprintf(buffer, "%i,%i",Xpx,Ypx-resolution);
+		int y = (Ypx-resolution)/resolution;
+		int x = Xpx/resolution;
+		//printf("x is, %i\t", X);
+
+		sprintf(buffer, "%i,%i",Xpx/resolution,(Xpx-resolution)/resolution);
 		new_key = buffer;
 		if(visitedBlocks.find(new_key) == visitedBlocks.end() && (Ypx-resolution) > 0){
 			visitedBlocks.insert(new_key);
-			recursiveIlevelCalc(Xpx, Ypx+resolution, new_key,event);
+			recursiveIlevelCalc(Xpx, Ypx-resolution, new_key,event);
 		}
 	}
 }

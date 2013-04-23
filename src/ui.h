@@ -42,16 +42,42 @@ class UI
 		static void mapCounter_static_callback(Fl_Widget *w, void *f);
 		void mapCounter_callback(Fl_Widget *w);
 
-		static void showLocation_static_callback(Fl_Widget *w, void *f);
+		static void showLocation_static_callback(Fl_Widget *w, void *f){
+			((UI*)f)->showLocation_callback(w);
+		}
 		void showLocation_callback(Fl_Widget *w);
 
-		static void showGrid_static_callback(Fl_Widget *w, void *f);
+		static void showGrid_static_callback(Fl_Widget *w, void *f){
+			((UI*)f)->showGrid_callback(w);	
+		}	
 		void showGrid_callback(Fl_Widget *w);
 
-		static void resSlide_static_callback(Fl_Widget *w, void *f);
+		static void resSlide_static_callback(Fl_Widget *w, void *f){
+			((UI*)f)->resSlide_callback(w);	
+		}
 		void resSlide_callback(Fl_Widget *w);
 
-		
+		static void showFreq_static_callback(Fl_Widget *w, void *f){
+			((UI *)f)->showFreq_callback(w);
+		}
+		void showFreq_callback(Fl_Widget *w);
+
+		static void showCumulative_static_callback(Fl_Widget *w, void *f){
+			((UI *)f)->showCumulative_callback(w);
+		}
+		void showCumulative_callback(Fl_Widget *w);
+
+		static void showAverage_static_callback(Fl_Widget *w, void *f){
+			((UI *)f)->showAverage_callback(w);
+		}
+		void showAverage_callback(Fl_Widget *w);
+
+		static void calculateIButton_static_callback(Fl_Widget *w, void *f){
+			((UI *)f)->calculateIButton_callback(w);
+		}
+		void calculateIButton_callback(Fl_Widget *w);
+
+
 		//const values:
 		static const int UI_X = 1024;
 		static const int UI_Y = 700;
@@ -67,7 +93,7 @@ class UI
 		Fl_Tabs *tabs;
 		Fl_Group *mapTab;
 		Fl_Group *dataTab;
-		
+
 		//Widgets:
 		//Data process widgets:
 		Fl_Hor_Slider *zCounter;
@@ -75,10 +101,14 @@ class UI
 		Fl_Text_Buffer *outputBuffer;
 		Fl_Counter *stepSizeCounter;
 		Fl_Button *processDataButton;
+		Fl_Button *calculateIButton;
 		Fl_Hor_Slider *resSlide;
 		Fl_Value_Output *resOutput;
 
 		//Map Widgets:
+		Fl_Check_Button *showCumulative;
+		Fl_Check_Button *showAverage;
+		Fl_Check_Button *showFreq;
 		Fl_Check_Button *showLocation; /*<! check button to enable or disable event origin drawing  */
 		Fl_Check_Button *showGrid; /*<! check button to enable sector grid in map drawing*/
 		Fl_Counter *mapCounter; /*<! counter for controlling currently active map*/
