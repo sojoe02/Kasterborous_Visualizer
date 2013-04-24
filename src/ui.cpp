@@ -122,8 +122,8 @@ void UI::zChanged_callback(Fl_Widget *w){
 }
 
 void UI::resSlide_callback(Fl_Widget *w){
-	Utility::resolution = resSlide->value();
-	resOutput->value(resSlide->value());
+	Utility::resolution = resSlide->value()+1;
+	resOutput->value(resSlide->value()+1);
 }
 
 void UI::pButton_static_callback(Fl_Widget *w, void *f){
@@ -146,6 +146,8 @@ void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
 		sprintf(buffer, "max level has been calculated as %f\n, adjusting thresshold slider...", tmp);
 		printmsg(buffer, NULL);
 		zCounter->bounds(0, tmp);
+		zCounter->value(tmp/5);
+		zOutput->value(tmp/5);
 		zCounter->step(tmp/100);
 	} else printmsg(fname, " not found", NULL);
 	calculateIButton->show();
@@ -153,10 +155,11 @@ void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
 
 void UI::calculateIButton_callback(Fl_Widget *w){
 	maphandler->calcIntensityLevels(zCounter->value());
+	mapCounter->show();
+
 }
 
 //SETUP FUNCTIONS:
-
 void UI::setupDataTab(){
 	zCounter = new Fl_Hor_Slider(5, 50, 200,25, "Z-Thresshold:");
 	zCounter->bounds(0, 1);
@@ -166,9 +169,12 @@ void UI::setupDataTab(){
 	zCounter->align(FL_ALIGN_TOP_LEFT);
 
 	resSlide = new Fl_Hor_Slider(5,100,200,25, "Resolution:");
-	resSlide->bounds(1,99);
+	resSlide->bounds(0,101);
+
 	resSlide->step(2);
+	resSlide->value(3);
 	resSlide->callback(resSlide_static_callback, (void*)this);
+
 	resOutput = new Fl_Value_Output(205,100,100,25,"");
 	resSlide->align(FL_ALIGN_TOP_LEFT);
 	resSlide->value(Utility::resolution);
@@ -204,6 +210,7 @@ void UI::setupMapTab(){
 	mapCounter->bounds(0, 5000);
 	mapCounter->align(FL_ALIGN_TOP_LEFT);
 	mapCounter->callback(mapCounter_static_callback, (void*)this);
+	mapCounter->hide();
 
 	showLocation = new Fl_Check_Button(5,100,100,20, "Origins:");
 	showLocation->align(FL_ALIGN_TOP_LEFT);
@@ -238,5 +245,6 @@ void UI::setupMapTab(){
 	mapTab->add(showFreq);
 	mapTab->add(showAverage);
 	mapTab->add(showCumulative);
+	//mapTab->hide();
 
 }

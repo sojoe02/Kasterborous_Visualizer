@@ -17,7 +17,7 @@ double Utility::max_averageIlvl = 0;
 double Utility::min_cumulativeIlvl = 0;
 double Utility::min_frequency = 0;
 double Utility::min_averageIlvl = 0;
-
+int Utility::c_state = 0;
 std::mutex Utility::utilityMutex;
 
 int Utility::resolution = 5;

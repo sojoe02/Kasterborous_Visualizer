@@ -19,25 +19,20 @@
 #include "iblock.h"
 #include "utility.h"
 
-IBlock::IBlock(int X, int Y, int W, int H, const char *L)
-	:cumulativeIlvl(0),frequency(0),averageIlvl(0),Fl_Button(X,Y,W,H,L){
+IBlock::IBlock(int posx, int posy)
+	:cumulativeIlvl(0),frequency(0),averageIlvl(0),
+	x(posx),y(posy){
 	}
 
-void IBlock::draw(){
-	int state = Utility::map_StateMachine();	
-
-	if(state = Utility::map_Cumulative){
-		fl_color(Utility::getCumulativeColor
-				(cumulativeIlvl));
-	}else if(state = Utility::map_Freq){
-		fl_color(Utility::getFreqColor(frequency));
-	}else if(state = Utility::map_Average){
-		fl_color(Utility::getAvgColor(averageIlvl));
+Fl_Color IBlock::getColor(){
+	int state = Utility::map_StateMachine();
+	if(state == Utility::map_Cumulative){
+		return Utility::getCumulativeColor(cumulativeIlvl);
+	}else if(state == Utility::map_Freq){
+		return Utility::getFreqColor(frequency);
+	}else if(state == Utility::map_Average){
+		return Utility::getAvgColor(averageIlvl);
 	}
-
-	for(int i = 0; i<h();i++){
-		fl_line(x(),y()+i,w(),h());
-	}	
 }
 
 void IBlock::addIntensityLevel(double ilvl){
@@ -50,7 +45,7 @@ void IBlock::addIntensityLevel(double ilvl){
  * Retrieve block values in an array;
  */
 void IBlock::getBlockValues(double &c, double &f, double &a){
-	c= cumulativeIlvl;
-	f= frequency;
-	a= averageIlvl;
+	if(cumulativeIlvl>0) c= cumulativeIlvl;
+	if(frequency>0) f = frequency;
+	if(averageIlvl>0) a = averageIlvl;
 }

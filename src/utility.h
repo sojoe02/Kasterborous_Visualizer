@@ -13,6 +13,8 @@ class Utility
 		 */
 		static Fl_Color thressToRainbow(double value, double min=0, double max=1){
 			double thress = (value-min)/(max-min);
+
+			//printf("%f\t%f\t%f\t%f\t%f\t%f\t%i\n",min,max,value,thress,Utility::max_cumulativeIlvl,Utility::max_frequency, c_state);
 					
 			uchar r = 0;
 			uchar g = 0;
@@ -23,7 +25,7 @@ class Utility
 
 			if(thress < scale){
 				b = sat;
-				g =uchar (thress/scale * sat); 
+				g = uchar (thress/scale * sat); 
 				return fl_rgb_color(r,g,b);
 			} else if(thress < (scale*2)){
 				g = sat;
@@ -67,7 +69,6 @@ class Utility
 		 * @see map_Average
 		 */
 		static int map_StateMachine(int state = 0){
-			int c_state;
 			switch (state){
 				case 1 :
 					c_state = Utility::map_Cumulative;
@@ -141,6 +142,8 @@ class Utility
 		static double min_cumulativeIlvl;
 		static double min_frequency;
 		static double min_averageIlvl;
+		static int c_state;
+
 };
 
 

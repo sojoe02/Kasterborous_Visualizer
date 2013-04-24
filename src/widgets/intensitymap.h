@@ -3,6 +3,7 @@
 
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
+
 #include <list>
 #include <string>
 #include <unordered_map>
@@ -22,8 +23,8 @@ class IntensityMap : public Fl_Widget
 	public:
 		IntensityMap(std::string msg,Event::simInfo info,int X, int Y, int W, int H,const char *L);
 		void binEvent(Event::dataEvent devent);
-		void calculateIlevel(double thresshold);
-		void recursiveIlevelCalc(int Xpx, int Ypx, std::string key, Event::dataEvent event);
+		void calculateIlevel(double thress);
+		void recursiveIlevelCalc(int Xpx, int Ypx, std::string key, std::string table);
 		void normalizeIntensityLevels(double maxValue, double minValue);
 		void showMap();
 
@@ -34,13 +35,15 @@ class IntensityMap : public Fl_Widget
 
 		//inherited from Fl_Widget:
 		void draw();
+		//void hide();
+		//void show(); 
 
 	private:
 		std::list<Event::dataEvent> dataEvents;
 		std::list<Event::dataEvent>::iterator dataItr;
 		
 		//std::unordered_map<std::string>::iterator iBlockItr;
-		std::unordered_map<std::string, IBlock*> iBlocks; /*<! contains all iBlocks @see IBlock one for each pixel*resolution with key "x,y"  */
+		std::unordered_map<std::string, IBlock> iBlocks; /*<! contains all iBlocks @see IBlock one for each pixel*resolution with key "x,y"  */
 		std::unordered_set<std::string> visitedBlocks;
 
 		std::list<double> normalizedIntensityLevels;	

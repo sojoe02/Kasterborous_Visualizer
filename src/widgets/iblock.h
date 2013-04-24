@@ -19,29 +19,32 @@
 #ifndef IBLOCK_H
 #define IBLOCK_H
 
-#include <FL/Fl_Button.H>
-#include <FL/fl_draw.H>
+#include <FL/Enumerations.H>
 
 #include <string>
 
-class IBlock : public Fl_Button
+class IBlock 
 {
 	public:
-		IBlock(int X, int Y, int W, int H, const char *L);
+		IBlock(int posx,int posy);
 		
-		void draw();
-
 		/**
 		 * Add an intensity level 
 		 */
 		void addIntensityLevel(double ilvl);
 		void getBlockValues(double &c, double &f,
 				double &a);
+		
+		Fl_Color getColor();
+
+		int getPosX(){return x;}
+		int getPosY(){return y;}
 
 	private:
 		double cumulativeIlvl;
 		double frequency;
 		double averageIlvl;
+		int x, y;
 		
 
 };	
