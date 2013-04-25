@@ -86,6 +86,7 @@ class UI
 	private:		
 		void setupMapTab();
 		void setupDataTab();
+		void redrawMap();
 
 		MapHandler *maphandler;
 		Fl_Window *window;

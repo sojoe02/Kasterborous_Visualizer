@@ -45,7 +45,7 @@ void IBlock::addIntensityLevel(double ilvl){
  * Retrieve block values in an array;
  */
 void IBlock::getBlockValues(double &c, double &f, double &a){
-	if(cumulativeIlvl>0) c= cumulativeIlvl;
-	if(frequency>0) f = frequency;
-	if(averageIlvl>0) a = averageIlvl;
+	c= cumulativeIlvl;
+	f = frequency;
+	a = averageIlvl;
 }

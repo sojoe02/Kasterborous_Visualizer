@@ -42,10 +42,6 @@ IntensityMap::IntensityMap(std::string msg,Event::simInfo info,int X, int Y, int
 
 void IntensityMap::draw(){
 
-	//Fl_Widget::draw();
-	fl_color(FL_BLACK);
-	fl_rect(x(),y(),w(),h());
-
 	std::unordered_map<std::string, IBlock>::iterator itr = iBlocks.begin();
 	for(; itr !=iBlocks.end(); itr++){
 		IBlock iblock = itr->second; 
@@ -54,10 +50,7 @@ void IntensityMap::draw(){
 			fl_line(iblock.getPosX(),iblock.getPosY()+i,
 					iblock.getPosX()+resolution,iblock.getPosY()+i);
 		}	
-
 	}
-
-
 	if(Utility::show_SectorGrid){
 		fl_color(FL_WHITE);
 		for(int i = 0; i < w(); i+=resolution){
@@ -67,8 +60,6 @@ void IntensityMap::draw(){
 			fl_line(x(),y()+j, x()+w(), y()+j);
 		}
 	}
-
-
 	if(Utility::show_Location){
 		fl_color(FL_BLACK);
 		//first draw the positions of all active Autons:
@@ -88,30 +79,7 @@ void IntensityMap::draw(){
 			}
 		}
 	}
-
-	//fl_draw(msg.c_str(),msg.length(),x()+w()/2,y()+h());
-	//	printf("%s",I.c_str());
 }
-
-/* void IntensityMap::hide(){
-
-   Fl_Widget::hide();
-
-   std::unordered_set<std::string, IBlock*>::iterator itr
-   for(itr = iBlocks.begin(); itr !=iBlocks.end(); itr++){
-   (*itr)->hide();
-   }	
-   }
-
-   void IntensityMap::show(){
-   Fl_Widget::show();
-
-   std::unordered_set<std::string, IBlock*>::iterator itr
-   for(itr = iBlocks.begin(); itr !=iBlocks.end(); itr++){
-   (*itr)->show();
-   }	
-
-   }*/
 
 /**
  * Visit all data events and calculate the origins intensity
@@ -122,8 +90,8 @@ void IntensityMap::calculateMaxIntensity(){
 	resolution = Utility::resolution;
 	//initialize all the iblocks!
 	int z = 0;
-	for(int i = 0; i < w()+resolution; i+=resolution){
-		for(int j = 0; j < h()+resolution; j+=resolution){
+	for(int i = 0; i < w(); i+=resolution){
+		for(int j = 0; j < h(); j+=resolution){
 			z++;
 			char buffer[40];
 			sprintf(buffer, "%i,%i", i/resolution, j/resolution);
@@ -249,9 +217,9 @@ void IntensityMap::calculateIlevel(double thress){
 		if(c_max < c) c_max = c;
 		if(a_max < a) a_max = a;
 		if(f_max < f) f_max = f;
-		if(c_min > c) c_min = c;
-		if(a_min > a) a_min = a;
-		if(f_min > f) f_min = f;			
+		if(c_min > c && c > 0) c_min = c;
+		if(a_min > a && a > 0) a_min = a;
+		if(f_min > f && f > 0) f_min = f;			
 	}
 
 	double values[] = {c_max,f_max,a_max,
@@ -290,34 +258,34 @@ void IntensityMap::recursiveIlevelCalc(int Xpx, int Ypx, std::string key, std::s
 	}else printf("key doesn't exist, \t %s\n", key.c_str());
 
 
-	if(Xpx-resolution>0 && Ypx-resolution>0 && tmpI > thresshold){
+	if(tmpI > thresshold){
 		//printf("%f, \t",tmpI, thresshold);
 		//Go East:
 		char buffer[40];
 		sprintf(buffer,"%i,%i", (Xpx+resolution)/resolution, (Ypx)/resolution);
 		std::string new_key = buffer;
-		if(visitedBlocks.find(new_key) == visitedBlocks.end() && (Xpx+resolution) < w()){
+		if(visitedBlocks.find(new_key) == visitedBlocks.end() && Xpx+resolution <= w()){
 			visitedBlocks.insert(new_key);
 			recursiveIlevelCalc(Xpx+resolution, Ypx, new_key, table);
 		}
 		//Go West:
 		sprintf(buffer,"%i,%i",(Xpx-resolution)/resolution,(Ypx)/resolution);
 		new_key = buffer;
-		if(visitedBlocks.find(new_key) == visitedBlocks.end()){
+		if(visitedBlocks.find(new_key) == visitedBlocks.end() && Xpx-resolution>0){
 			visitedBlocks.insert(new_key);
 			recursiveIlevelCalc(Xpx-resolution, Ypx, new_key, table);
 		}
 		//Go South:
 		sprintf(buffer,"%i,%i",(Xpx)/resolution,(Ypx+resolution)/resolution);
 		new_key = buffer;
-		if(visitedBlocks.find(new_key) == visitedBlocks.end() && (Ypx+resolution) < h()){
+		if(visitedBlocks.find(new_key) == visitedBlocks.end() && Ypx+resolution < h()){
 			visitedBlocks.insert(new_key);
 			recursiveIlevelCalc(Xpx, Ypx+resolution, new_key,table);
 		}
 		//Go North:
 		sprintf(buffer, "%i,%i",(Xpx)/resolution,(Ypx-resolution)/resolution);
 		new_key = buffer;
-		if(visitedBlocks.find(new_key) == visitedBlocks.end()){
+		if(visitedBlocks.find(new_key) == visitedBlocks.end() && Ypx-resolution>0){
 			visitedBlocks.insert(new_key);
 			recursiveIlevelCalc(Xpx, Ypx-resolution, new_key, table);
 		}

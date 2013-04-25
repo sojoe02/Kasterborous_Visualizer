@@ -71,19 +71,21 @@ void UI::showFreq_callback(Fl_Widget *w){
 	showCumulative->value(0);
 	showAverage->value(0);
 	Utility::map_StateMachine(Utility::map_Freq);
+	redrawMap();
 }
 
 void UI::showCumulative_callback(Fl_Widget *w){
 	showFreq->value(0);
 	showAverage->value(0);
 	Utility::map_StateMachine(Utility::map_Cumulative);
+	redrawMap();
 }
 
 void UI::showAverage_callback(Fl_Widget *w){
 	showCumulative->value(0);
 	showFreq->value(0);
 	Utility::map_StateMachine(Utility::map_Average);
-
+	redrawMap();
 }
 
 
@@ -146,8 +148,8 @@ void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
 		sprintf(buffer, "max level has been calculated as %f\n, adjusting thresshold slider...", tmp);
 		printmsg(buffer, NULL);
 		zCounter->bounds(0, tmp);
-		zCounter->value(tmp/5);
-		zOutput->value(tmp/5);
+		zCounter->value(tmp/33);
+		zOutput->value(tmp/33);
 		zCounter->step(tmp/100);
 	} else printmsg(fname, " not found", NULL);
 	calculateIButton->show();
@@ -193,7 +195,7 @@ void UI::setupDataTab(){
 	processDataButton = new Fl_Button(5,ymax-100,150,25,"Process Data");
 	processDataButton->callback(pButton_static_callback, (void*)this);
 
-	calculateIButton = new Fl_Button(175,ymax-100,150,25,"Calc I Levels");
+	calculateIButton = new Fl_Button(175,ymax-100,150,25,"Calculate Intensities");
 	calculateIButton->callback(calculateIButton_static_callback, (void*)this);
 	calculateIButton->hide();
 
@@ -246,5 +248,12 @@ void UI::setupMapTab(){
 	mapTab->add(showAverage);
 	mapTab->add(showCumulative);
 	//mapTab->hide();
+
+}
+
+void UI::redrawMap(){
+	maphandler->redrawMap();
+	colormap->hide();
+	colormap->show();
 
 }
