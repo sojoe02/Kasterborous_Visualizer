@@ -44,6 +44,8 @@ class IntensityMap : public Fl_Widget
 		
 		//std::unordered_map<std::string>::iterator iBlockItr;
 		std::unordered_map<std::string, IBlock> iBlocks; /*<! contains all iBlocks @see IBlock one for each pixel*resolution with key "x,y"  */
+		std::unordered_map<std::string,IBlock>::iterator blockItr;
+
 		std::unordered_set<std::string> visitedBlocks;
 
 		std::list<double> normalizedIntensityLevels;	

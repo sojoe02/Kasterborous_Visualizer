@@ -4,7 +4,11 @@
 #include <FL/Enumerations.H>
 #include <stdio.h>
 #include <mutex>
+#include <atomic>
 
+#include "ui.h"
+
+class UI;
 class Utility
 {
 	public:
@@ -23,6 +27,14 @@ class Utility
 		static double min_cumulativeIlvl;
 		static double min_frequency;
 		static double min_averageIlvl;
+
+		static UI* ui;
+
+		static void incrementProgress(double value){
+			std::lock_guard<std::mutex> lock(Utility::utilityMutexUI);
+			ui->incrementProgress(value);
+		}
+
 
 		/**
 		 * Colormapper that upon receiving a value between a min and max returns a FLTK
@@ -149,9 +161,11 @@ class Utility
 						
 		}
 
+
+
 	private: 
 		static std::mutex utilityMutex;
-
+		static std::mutex utilityMutexUI;
 		static int c_state;
 
 };

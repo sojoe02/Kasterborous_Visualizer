@@ -1,0 +1,5 @@
+
+#define kast_vis_VERSION_MAJOR @kast_vis_VERSION_MAJOR@
+#define kast_vis_VERSION_MINOR @kast_vis_VERSION_MINOR@
+
+

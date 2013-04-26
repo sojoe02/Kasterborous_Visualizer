@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 2.6)
 project(Kast_Vis)
 
 #Version number:
-set (Kasterborous_Visualizer_VERSION_MAJOR 0)
-set (Kasterborous_Visualizer_VERSION_MINOR 12)
+set (kast_vis_VERSION_MAJOR 0)
+set (kast_vis_VERSION_MINOR 23)
 #Configure a header file to pass CMake stuff to the source code:
 configure_file (
-  ${PROJECT_SOURCE_DIR}/kast_vis.h.in
+  ${PROJECT_SOURCE_DIR}/src/kast_vis.h.in
   ${PROJECT_BINARY_DIR}/kast_vis.h
 )
 #------------------------------------------------

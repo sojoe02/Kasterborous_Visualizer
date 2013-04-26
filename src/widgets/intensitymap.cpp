@@ -34,7 +34,6 @@ IntensityMap::IntensityMap(std::string msg,Event::simInfo info,int X, int Y, int
 	}
 	xcf = double(w()) / info.areaX;
 	ycf = double(h()) / info.areaY;
-	//printf("%f, %f\n", xcf,ycf);
 	label(msg.c_str());
 
 	resolution = 5;
@@ -98,16 +97,13 @@ void IntensityMap::calculateMaxIntensity(){
 			IBlock iblock(i+x(), j+y());
 			std::string key = buffer;
 			iBlocks.insert(std::pair<std::string,IBlock>(key,iblock));
-			//iBlocks[key] = iblock;
-			//this->add(iblock);
-			//printf("%s\n",buffer);	
 		}
 	}
 	printf("%i\n", z);
 	maxIntensity = 0;
 
-	for(dataItr = dataEvents.begin(); dataItr != dataEvents.end()
-			;dataItr++){
+	for(dataItr = dataEvents.begin(); dataItr != dataEvents.end();dataItr++){
+
 		Event::dataEvent event = *dataItr;
 
 		lua_getglobal(L_State, "initAuton");
@@ -135,6 +131,8 @@ void IntensityMap::calculateMaxIntensity(){
 		double tmpI = lua_tonumber(L_State,-1);
 		if(tmpI > maxIntensity)
 			maxIntensity = tmpI;
+
+		Utility::incrementProgress(1);
 	}
 }
 
@@ -168,9 +166,13 @@ void IntensityMap::calculateIlevel(double thress){
 
 	printf("Do recursive call till' thresshold is met\n");
 
+	int  i;
+
 	//Then do the recursive calls:
-	for(dataItr = dataEvents.begin(); dataItr != dataEvents.end()
-			;dataItr++){
+	for(i = 0,dataItr = dataEvents.begin()
+			;dataItr != dataEvents.end()
+			;dataItr++, i++){
+
 		char buffer[40];
 
 		Event::dataEvent event = *dataItr;		
@@ -198,7 +200,11 @@ void IntensityMap::calculateIlevel(double thress){
 				,new_key,table);
 
 		visitedBlocks.clear();
+
+		if(i % 10 == 0)	
+			Utility::incrementProgress(10);
 	}
+
 
 	printf("Calculating min and max values\n");
 
@@ -224,7 +230,6 @@ void IntensityMap::calculateIlevel(double thress){
 
 	double values[] = {c_max,f_max,a_max,
 		c_min,f_min,a_min};
-
 	Utility::addMaxMinValues(values);
 }
 
@@ -253,41 +258,51 @@ void IntensityMap::recursiveIlevelCalc(int Xpx, int Ypx, std::string key, std::s
 
 	double tmpI = lua_tonumber(L_State,-1);
 
-	if(iBlocks.find(key) != iBlocks.end()){
-		iBlocks.find(key)->second.addIntensityLevel(tmpI);
-	}else printf("key doesn't exist, \t %s\n", key.c_str());
+	blockItr = iBlocks.find(key);
+
+	if(blockItr != iBlocks.end()){
+		(*blockItr).second.addIntensityLevel(tmpI);
+	} //else printf("key doesn't exist, \t %s\n", key.c_str());
 
 
 	if(tmpI > thresshold){
-		//printf("%f, \t",tmpI, thresshold);
-		//Go East:
+		std::string new_key;
 		char buffer[40];
-		sprintf(buffer,"%i,%i", (Xpx+resolution)/resolution, (Ypx)/resolution);
-		std::string new_key = buffer;
-		if(visitedBlocks.find(new_key) == visitedBlocks.end() && Xpx+resolution <= w()){
-			visitedBlocks.insert(new_key);
-			recursiveIlevelCalc(Xpx+resolution, Ypx, new_key, table);
+		if(Xpx+resolution <= w()){
+			//Go East:
+			sprintf(buffer,"%i,%i", (Xpx+resolution)/resolution, (Ypx)/resolution);
+			new_key =buffer;
+			if(visitedBlocks.find(new_key) == visitedBlocks.end() ){
+				visitedBlocks.insert(new_key);
+				recursiveIlevelCalc(Xpx+resolution, Ypx, new_key, table);
+			}
 		}
-		//Go West:
-		sprintf(buffer,"%i,%i",(Xpx-resolution)/resolution,(Ypx)/resolution);
-		new_key = buffer;
-		if(visitedBlocks.find(new_key) == visitedBlocks.end() && Xpx-resolution>0){
-			visitedBlocks.insert(new_key);
-			recursiveIlevelCalc(Xpx-resolution, Ypx, new_key, table);
+		if(Xpx-resolution >=0){
+			//Go West:
+			sprintf(buffer,"%i,%i",(Xpx-resolution)/resolution,(Ypx)/resolution);
+			new_key = buffer;
+			if(visitedBlocks.find(new_key) == visitedBlocks.end() ){
+				visitedBlocks.insert(new_key);
+				recursiveIlevelCalc(Xpx-resolution, Ypx, new_key, table);
+			}
 		}
-		//Go South:
-		sprintf(buffer,"%i,%i",(Xpx)/resolution,(Ypx+resolution)/resolution);
-		new_key = buffer;
-		if(visitedBlocks.find(new_key) == visitedBlocks.end() && Ypx+resolution < h()){
-			visitedBlocks.insert(new_key);
-			recursiveIlevelCalc(Xpx, Ypx+resolution, new_key,table);
+		if(Ypx+resolution <= h()){
+			//Go South:
+			sprintf(buffer,"%i,%i",(Xpx)/resolution,(Ypx+resolution)/resolution);
+			new_key = buffer;
+			if(visitedBlocks.find(new_key) == visitedBlocks.end() ){
+				visitedBlocks.insert(new_key);
+				recursiveIlevelCalc(Xpx, Ypx+resolution, new_key,table);
+			}
 		}
-		//Go North:
-		sprintf(buffer, "%i,%i",(Xpx)/resolution,(Ypx-resolution)/resolution);
-		new_key = buffer;
-		if(visitedBlocks.find(new_key) == visitedBlocks.end() && Ypx-resolution>0){
-			visitedBlocks.insert(new_key);
-			recursiveIlevelCalc(Xpx, Ypx-resolution, new_key, table);
+		if(Ypx-resolution >=0 ){
+			//Go North:
+			sprintf(buffer, "%i,%i",(Xpx)/resolution,(Ypx-resolution)/resolution);
+			new_key = buffer;
+			if(visitedBlocks.find(new_key) == visitedBlocks.end() ){
+				visitedBlocks.insert(new_key);
+				recursiveIlevelCalc(Xpx, Ypx-resolution, new_key, table);
+			}
 		}
 	}
 }

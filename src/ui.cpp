@@ -46,24 +46,32 @@ UI::UI(Fl_Window* window)
 
 
 void UI::printmsg(const char* msg, ...){
-
 	std::lock_guard<std::mutex> lock(printMutex);
 
 	const char *nextStr = NULL;
 	va_list argp;
-
-	//output->show_insert_position();	
 	outputBuffer->append(msg);
-
 	va_start(argp, msg);
 	while( (nextStr = va_arg(argp, const char*)) != NULL){
 			outputBuffer->append(nextStr);
 	}
 	va_end(argp);
-
-
-	//Fl::flush();
+	Fl::check();
 }
+
+void UI::setProgressMinMax(int min, int max){
+	progress->maximum(max);
+	progress->minimum(min);	
+}
+
+void UI::incrementProgress(double value = 1){
+	progress->value(progress->value() + value);
+	char percent[10];
+	sprintf(percent,"%d%%", int (progress->value()/progress->maximum()*100.0));
+	progress->label(percent);
+	Fl::check();
+}
+
 //CALLBACK FUNCTIONS:
 //
 
@@ -128,12 +136,9 @@ void UI::resSlide_callback(Fl_Widget *w){
 	resOutput->value(resSlide->value()+1);
 }
 
-void UI::pButton_static_callback(Fl_Widget *w, void *f){
-	((UI *)f)->pButton_callback(w, ((UI *)f)->maphandler);
-}
-
 void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
-	processDataButton->label("processing");
+	processDataButton->label("Processing...");
+	Fl::check();
 	output->show_insert_position();	
 	int s = int (stepSizeCounter->value());
 	double t = zCounter->value();
@@ -145,7 +150,7 @@ void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
 		mapCounter->bounds(0, ImapAmount-1);
 		double tmp = maphandler->calcMaxIntensityLevels();
 		char buffer[100];
-		sprintf(buffer, "max level has been calculated as %f\n, adjusting thresshold slider...", tmp);
+		sprintf(buffer, "Max level has been calculated as %f\n Adjusting thresshold slider\n", tmp);
 		printmsg(buffer, NULL);
 		zCounter->bounds(0, tmp);
 		zCounter->value(tmp/33);
@@ -153,6 +158,7 @@ void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
 		zCounter->step(tmp/100);
 	} else printmsg(fname, " not found", NULL);
 	calculateIButton->show();
+	processDataButton->label("Process Data");
 }
 
 void UI::calculateIButton_callback(Fl_Widget *w){
@@ -163,7 +169,7 @@ void UI::calculateIButton_callback(Fl_Widget *w){
 
 //SETUP FUNCTIONS:
 void UI::setupDataTab(){
-	zCounter = new Fl_Hor_Slider(5, 50, 200,25, "Z-Thresshold:");
+	zCounter = new Fl_Hor_Slider(5, 50, 300,25, "Z-Thresshold:");
 	zCounter->bounds(0, 1);
 	zCounter->step(0.01);
 	zCounter->callback(zChanged_static_callback, (void*)this);
@@ -182,7 +188,7 @@ void UI::setupDataTab(){
 	resSlide->value(Utility::resolution);
 	resOutput->value(Utility::resolution);
 
-	datafile = new Fl_Input(5,150, 350,25,"Filename:");
+	datafile = new Fl_Input(5,150, 300,25,"Filename:");
 	datafile->insert("savefile.kas");
 	datafile->align(FL_ALIGN_TOP_LEFT);
 
@@ -192,10 +198,10 @@ void UI::setupDataTab(){
 	stepSizeCounter->value(50);
 	stepSizeCounter->align(FL_ALIGN_TOP_LEFT);
 
-	processDataButton = new Fl_Button(5,ymax-100,150,25,"Process Data");
+	processDataButton = new Fl_Button(5,ymax-100,140,25,"Process Data");
 	processDataButton->callback(pButton_static_callback, (void*)this);
 
-	calculateIButton = new Fl_Button(175,ymax-100,150,25,"Calculate Intensities");
+	calculateIButton = new Fl_Button(150,ymax-100,150,25,"Calculate Intensities");
 	calculateIButton->callback(calculateIButton_static_callback, (void*)this);
 	calculateIButton->hide();
 
@@ -203,6 +209,12 @@ void UI::setupDataTab(){
 	output = new Fl_Text_Display(500,50,450,600,"Output");
 	outputBuffer = new Fl_Text_Buffer();
 	output->buffer(outputBuffer);
+
+	//progress-bar:
+	progress = new Fl_Progress(5,ymax-50,300,30);
+    	progress->color(0x88888800);               // background color
+    	progress->selection_color(0x4444ff00);     // progress bar color
+	progress->labelcolor(FL_WHITE);            // percent text color
 }
 
 void UI::setupMapTab(){

@@ -16,6 +16,7 @@
 #include <FL/Fl_Widget.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Check_Button.H>
+#include <FL/Fl_Progress.H>
 
 #include <string>
 #include <mutex>
@@ -23,6 +24,7 @@
 #include "maphandler.h"
 #include "colormap.h"
 
+class Utility;
 class MapHandler;
 class UI
 {
@@ -31,50 +33,47 @@ class UI
 		Fl_Text_Display *output;
 
 		void printmsg(const char *msg,...);
+		void setProgressMinMax(int min, int max);
+		void incrementProgress(double value);
+		void resetProgress(){progress->value(0);}
 				
 		//Callback functions:
 		static void zChanged_static_callback(Fl_Widget *w, void *f);
 		void zChanged_callback(Fl_Widget *w);
 
-		static void pButton_static_callback(Fl_Widget *w, void *f);
+		static void pButton_static_callback(Fl_Widget *w, void *f){
+			((UI *)f)->pButton_callback(w, ((UI *)f)->maphandler);}
 		void pButton_callback(Fl_Widget *w, MapHandler *m);
-		
+
 		static void mapCounter_static_callback(Fl_Widget *w, void *f);
 		void mapCounter_callback(Fl_Widget *w);
 
 		static void showLocation_static_callback(Fl_Widget *w, void *f){
-			((UI*)f)->showLocation_callback(w);
-		}
+			((UI*)f)->showLocation_callback(w);}
 		void showLocation_callback(Fl_Widget *w);
 
 		static void showGrid_static_callback(Fl_Widget *w, void *f){
-			((UI*)f)->showGrid_callback(w);	
-		}	
+			((UI*)f)->showGrid_callback(w);}
 		void showGrid_callback(Fl_Widget *w);
 
 		static void resSlide_static_callback(Fl_Widget *w, void *f){
-			((UI*)f)->resSlide_callback(w);	
-		}
+			((UI*)f)->resSlide_callback(w);}
 		void resSlide_callback(Fl_Widget *w);
 
 		static void showFreq_static_callback(Fl_Widget *w, void *f){
-			((UI *)f)->showFreq_callback(w);
-		}
+			((UI *)f)->showFreq_callback(w);}
 		void showFreq_callback(Fl_Widget *w);
 
 		static void showCumulative_static_callback(Fl_Widget *w, void *f){
-			((UI *)f)->showCumulative_callback(w);
-		}
+			((UI *)f)->showCumulative_callback(w);}
 		void showCumulative_callback(Fl_Widget *w);
 
 		static void showAverage_static_callback(Fl_Widget *w, void *f){
-			((UI *)f)->showAverage_callback(w);
-		}
+			((UI *)f)->showAverage_callback(w);}
 		void showAverage_callback(Fl_Widget *w);
 
 		static void calculateIButton_static_callback(Fl_Widget *w, void *f){
-			((UI *)f)->calculateIButton_callback(w);
-		}
+			((UI *)f)->calculateIButton_callback(w);}
 		void calculateIButton_callback(Fl_Widget *w);
 
 
@@ -105,6 +104,7 @@ class UI
 		Fl_Button *calculateIButton;
 		Fl_Hor_Slider *resSlide;
 		Fl_Value_Output *resOutput;
+		Fl_Progress *progress;
 
 		//Map Widgets:
 		Fl_Check_Button *showCumulative;
@@ -115,7 +115,6 @@ class UI
 		Fl_Counter *mapCounter; /*<! counter for controlling currently active map*/
 		//Fl_Label *datalabel; /*<! */
 		Fl_Input *datafile;
-
 		ColorMap *colormap;
 
 		int xmax,ymax;

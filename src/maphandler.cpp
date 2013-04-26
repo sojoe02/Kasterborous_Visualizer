@@ -24,6 +24,7 @@
 #include <mutex>
 
 #include"maphandler.h"
+#include"utility.h"
 
 MapHandler::MapHandler(UI *ui, Fl_Group *mapTab)
 	:ui(ui),threadAmount(6),mapTab(mapTab), thresshold(0),stepSize(0)
@@ -45,7 +46,8 @@ bool MapHandler::parseData(const char* filename){
 			//sprintf(buffer, "id: %llu, activationtime %llu",devent.id, devent.activationTime);			
 			dataEvents.push_back(devent);
 		}
-		ui->printmsg("data loaded\n",NULL);
+		ui->setProgressMinMax(1,dataEvents.size());
+		ui->printmsg("Data loaded\n",NULL);
 		return true;
 	} else return false;
 }
@@ -124,8 +126,8 @@ void MapHandler::setThreadData(){
 /**
  * Calculate the maximum possible Intensity level
  */
-double MapHandler::calcMaxIntensityLevels(){
-
+double MapHandler::calcMaxIntensityLevels(){	
+	ui->resetProgress();
 	ui->printmsg("calculating intensity levels\n", NULL);
 	std::thread* threads[threadAmount];
 	setThreadData();
@@ -142,9 +144,6 @@ double MapHandler::calcMaxIntensityLevels(){
 	double tmp = 0;
 
 	for(; itr!= intensityMaps.end(); itr++){
-		//char buffer[50];
-		//sprintf(buffer,"tmp is now %f \n", tmp);
-		//ui->printmsg(buffer,NULL);
 		tmp = (*itr)->getMaxIntensity();
 		if(tmp > ilvl)	
 			ilvl = tmp;	
@@ -168,8 +167,6 @@ void MapHandler::showIntensityMap(int index){
 		activeIMap = intensityMaps.at(index);
 		activeIMap->show();
 	}
-
-
 }
 
 void MapHandler::redrawMap(){
@@ -195,12 +192,15 @@ void MapHandler::calculateMaxIData(MapHandler *m, std::vector<IntensityMap*> ida
 
 /**
  * Calculate local intensity levels for each of the intensitymaps.
- * This function starts a threads for each intensity map vector
+ * This function starts a thread @see threadAmount for each intensity map vector
  * @see MapHandler::calculateIData
+ * @param thresshold, minimum impact value for the call calculations, how far will
+ * the recursive algorithm go.
  * 
  */
 void MapHandler::calcIntensityLevels(double thresshold){
-	ui->printmsg("calculating intensity levels\n", NULL);
+	ui->printmsg("Calculating Intensity levels\n", NULL);
+	ui->resetProgress();
 
 	std::thread* threads[threadAmount];
 
@@ -210,6 +210,7 @@ void MapHandler::calcIntensityLevels(double thresshold){
 	for(int i = 0; i< threadAmount; i++){
 		threads[i]->join();
 		delete threads[i];
+		printf("exititing");
 	}
 }
 /**
