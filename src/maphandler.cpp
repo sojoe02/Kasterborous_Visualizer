@@ -27,7 +27,7 @@
 #include"utility.h"
 
 MapHandler::MapHandler(UI *ui, Fl_Group *mapTab)
-	:ui(ui),threadAmount(6),mapTab(mapTab), thresshold(0),stepSize(0)
+	:ui(ui),threadAmount(1),mapTab(mapTab), thresshold(0),stepSize(0)
 {
 
 }
@@ -37,7 +37,9 @@ bool MapHandler::parseData(const char* filename){
 	
 	if(file.is_open()){	
 		file.read(reinterpret_cast<char*>(&dataInfo), sizeof(Event::simInfo));
-		ui->printmsg("Loading datafile\n LUA filename is:", dataInfo.luaFileName, "\n",NULL);
+		ui->printmsg("Loading datafile\nLUA filename is:");
+		ui->printmsg(dataInfo.luaFileName);
+		ui->printmsg("\n");
 		//ui->printmsg(dataInfo.luaFileName);
 		while(!file.eof()){
 			//char buffer[100];
@@ -47,7 +49,7 @@ bool MapHandler::parseData(const char* filename){
 			dataEvents.push_back(devent);
 		}
 		ui->setProgressMinMax(1,dataEvents.size());
-		ui->printmsg("Data loaded\n",NULL);
+		ui->printmsg("Data loaded\n");
 		return true;
 	} else return false;
 }
@@ -72,17 +74,21 @@ int MapHandler::binData(int timeStep, const char* L){
 	threadmap.clear();
 
 	std::list<Event::dataEvent>::iterator dataItr;
+	
 	int steps = int(dataInfo.tmuAmount / (dataInfo.timeResolution * double(timeStep)) + 0.5);
+	unsigned long long intensityPeriod = dataInfo.tmuAmount / steps;
+	
+
 	char buffer[50];
 	sprintf(buffer,"binning data into %d steps %llu \n", steps,dataInfo.tmuAmount);
-	ui->printmsg(buffer,NULL);
-	ui->printmsg("Initiating intensity maps\n",NULL);
+	ui->printmsg(buffer);
+	ui->printmsg("\nInitiating intensity maps\n");
 	for(int i = 0; i < steps; i++){
 		char buffer2[50];
 		sprintf(buffer2, "Intensity Map %i[s] to %i[s]", i*timeStep, i*timeStep+timeStep);
 		std::string msg = buffer2;
 		//printf("%s : %s\n",buffer2 , msg.c_str());
-		IntensityMap* imap = new IntensityMap(msg,dataInfo, 175, 50,mapTab->w()-200, mapTab->h()-75, "Intensity Map:");
+		IntensityMap* imap = new IntensityMap(msg,dataInfo,i,intensityPeriod, 175, 50,630, 630, "Intensity Map:");
 		mapTab->add(imap);
 		imap->hide();
 		intensityMaps.push_back(imap);
@@ -92,13 +98,13 @@ int MapHandler::binData(int timeStep, const char* L){
 	//ui->printmsg("Binning events into suitable eventmaps\n");
 	for(dataItr = dataEvents.begin(); dataItr != dataEvents.end(); dataItr++){
 		Event::dataEvent devent = *dataItr;	
-		int tmp = int(devent.activationTime / (dataInfo.timeResolution * double(timeStep)) - 0.5);
+		int tmp = int(devent.activationTime / (dataInfo.timeResolution * double(timeStep)));// - 0.5);
 		//char buffer[100];
 		//sprintf(buffer," inserting event at step : %d, a_tmu is : %llu \n", tmp,devent.activationTime);
 		//ui->printmsg(buffer, NULL);		
 		intensityMaps.at(tmp)->binEvent(devent);
 	}
-	ui->printmsg("Binning of data done\n", NULL);	
+	ui->printmsg("Binning of data done\n");	
 
 	return intensityMaps.size();
 }
@@ -128,7 +134,7 @@ void MapHandler::setThreadData(){
  */
 double MapHandler::calcMaxIntensityLevels(){	
 	ui->resetProgress();
-	ui->printmsg("calculating intensity levels\n", NULL);
+	ui->printmsg("calculating intensity levels\n");
 	std::thread* threads[threadAmount];
 	setThreadData();
 
@@ -153,6 +159,7 @@ double MapHandler::calcMaxIntensityLevels(){
 	for(iItr = intensityMaps.begin(); iItr != intensityMaps.end(); iItr++){
 		(*iItr)->setMaxIntensity(ilvl);
 	}
+	Utility::max_intensity = ilvl;
 	return ilvl;
 }
 
@@ -163,7 +170,7 @@ void MapHandler::showIntensityMap(int index){
 	if(activeIMap != NULL)
 		activeIMap->hide();
 
-	if(!intensityMaps.empty()){
+	if(!intensityMaps.empty() && index < intensityMaps.size()){
 		activeIMap = intensityMaps.at(index);
 		activeIMap->show();
 	}
@@ -183,7 +190,7 @@ void MapHandler::redrawMap(){
  * @param idata vector with a chuck of imaps (all imaps / threadnumber)
  */
 void MapHandler::calculateMaxIData(MapHandler *m, std::vector<IntensityMap*> idata){
-	m->ui->printmsg("starting thread\n",NULL);
+	Utility::printmsg("starting thread\n");
 	std::vector<IntensityMap*>::iterator idtr;
 	for(idtr = idata.begin(); idtr != idata.end(); idtr++){
 		(*idtr)->calculateMaxIntensity();
@@ -199,7 +206,7 @@ void MapHandler::calculateMaxIData(MapHandler *m, std::vector<IntensityMap*> ida
  * 
  */
 void MapHandler::calcIntensityLevels(double thresshold){
-	ui->printmsg("Calculating Intensity levels\n", NULL);
+	ui->printmsg("Calculating Intensity levels\n");
 	ui->resetProgress();
 
 	std::thread* threads[threadAmount];
@@ -210,7 +217,7 @@ void MapHandler::calcIntensityLevels(double thresshold){
 	for(int i = 0; i< threadAmount; i++){
 		threads[i]->join();
 		delete threads[i];
-		printf("exititing");
+		printf("exiting");
 	}
 }
 /**

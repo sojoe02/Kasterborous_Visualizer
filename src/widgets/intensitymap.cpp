@@ -15,14 +15,17 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "intensitymap.h"
 #include "utility.h"
+#include "png++/png.hpp"
 
 
 
-IntensityMap::IntensityMap(std::string msg,Event::simInfo info,int X, int Y, int W, int H, const char *L)
-	:msg(msg),info(info),maxIntensity(0),Fl_Widget(X,Y,W,H,L){
+IntensityMap::IntensityMap(std::string msg,Event::simInfo info,int i, unsigned long long intensityPeriod
+		,int X, int Y, int W, int H, const char *L)
+	:msg(msg),info(info),mapID(i), intensityPeriod(intensityPeriod),maxIntensity(0),Fl_Widget(X,Y,W,H,L){
 
 	//printf("%s\n", L);
 
@@ -102,6 +105,9 @@ void IntensityMap::calculateMaxIntensity(){
 	printf("%i\n", z);
 	maxIntensity = 0;
 
+
+
+
 	for(dataItr = dataEvents.begin(); dataItr != dataEvents.end();dataItr++){
 
 		Event::dataEvent event = *dataItr;
@@ -134,6 +140,9 @@ void IntensityMap::calculateMaxIntensity(){
 
 		Utility::incrementProgress(1);
 	}
+
+
+
 }
 
 /**
@@ -164,19 +173,42 @@ void IntensityMap::calculateIlevel(double thress){
 	printf("%f \n",thresshold);
 	resolution = Utility::resolution;
 
-	printf("Do recursive call till' thresshold is met\n");
+	/*
+	 * Initiate the Dynamic map containers:
+	 */
+	int dynamicAmount = (intensityPeriod / info.timeResolution)/0.01;
+	unsigned long long mapActivation = mapID * intensityPeriod;
 
+	for(int i = 0; i < w(); i+=resolution){
+		for(int j = 0; j < h(); j+=resolution){
+
+			colorLevels colors;
+
+			for(int k =0 ; k<dynamicAmount; k++){
+				colors.push_back(0);
+			}
+
+			char buffer[40];
+			sprintf(buffer, "%i,%i", i/resolution, j/resolution);
+			std::string key = buffer;
+			dynamicsMap.insert(std::pair<std::string,colorLevels>(key,colors));
+		}
+	}
+
+	printf("number of dynamic maps are, %i, activation TMU is, %llu \n"
+			, dynamicAmount, mapActivation);
+	/* ---------------------------------------------- */
+
+	printf("Do recursive call till' thresshold is met\n");	
+	
 	int  i;
-
 	//Then do the recursive calls:
 	for(i = 0,dataItr = dataEvents.begin()
 			;dataItr != dataEvents.end()
 			;dataItr++, i++){
 
 		char buffer[40];
-
-		Event::dataEvent event = *dataItr;		
-
+		Event::dataEvent event = *dataItr;
 		lua_settop(L_State,0);
 
 		lua_getglobal(L_State, "initAuton");
@@ -192,12 +224,13 @@ void IntensityMap::calculateIlevel(double thress){
 
 		sprintf(buffer,"%i,%i",int(event.originX*xcf/resolution), 
 				int(event.originY*ycf/resolution));
+
 		std::string new_key = buffer;
-		visitedBlocks.insert(new_key);	
+		visitedBlocks.insert(new_key);		
 		std::string table = event.table;
 
-		recursiveIlevelCalc(event.originX*xcf,event.originY*ycf
-				,new_key,table);
+		recursiveIlevelCalc(0.05, event.activationTime, event.originX, event.originY, event.originX*xcf, event.originY*ycf
+				, new_key,table);
 
 		visitedBlocks.clear();
 
@@ -205,6 +238,11 @@ void IntensityMap::calculateIlevel(double thress){
 			Utility::incrementProgress(10);
 	}
 
+	//writeDynamicMaps();
+
+	//dynamicsMap.clear();
+
+	//--------------------------------------------
 
 	printf("Calculating min and max values\n");
 
@@ -234,6 +272,7 @@ void IntensityMap::calculateIlevel(double thress){
 }
 
 
+
 /**
  * Recursive call to calculate all intensitylvls above thresshold.
  * This function will visist all unvisited neighboring intensity blocks
@@ -244,7 +283,7 @@ void IntensityMap::calculateIlevel(double thress){
  * @param key, hash map key which is "Xpx,Ypx" string.
  * @param event, the data event in question.
  */
-void IntensityMap::recursiveIlevelCalc(int Xpx, int Ypx, std::string key, std::string table){
+void IntensityMap::recursiveIlevelCalc(double eventDuration, unsigned long long activationTime,double originX,double originY, int Xpx, int Ypx, std::string key, std::string table){
 	lua_settop(L_State,0);
 
 	lua_getglobal(L_State, "processFunction");
@@ -264,6 +303,37 @@ void IntensityMap::recursiveIlevelCalc(int Xpx, int Ypx, std::string key, std::s
 		(*blockItr).second.addIntensityLevel(tmpI);
 	} //else printf("key doesn't exist, \t %s\n", key.c_str());
 
+	/* Dynamics map updating:
+	*/
+	dynamicsMapItr = dynamicsMap.find(key); 
+
+	if(dynamicsMapItr != dynamicsMap.end()){
+		//int dynamicAmount = (intensityPeriod / info.timeResolution)/0.01;
+		double distance = sqrt( pow((originX-Xpx/xcf), 2) + pow((originY-Ypx/ycf),2) );
+		unsigned long long arrivalTMU = distance / (343.2 / info.timeResolution);
+
+		int index = activationTime/(0.01*info.timeResolution) + arrivalTMU/(0.01*info.timeResolution);
+
+
+		index = index/(mapID+1);
+
+		//printf("activation time is %llu , arrivalTMU is %llu, distance %f, maps periodoffset: %llu\n", activationTime, arrivalTMU,distance,intensityPeriod*(mapID+1));
+		//convert to greyscale:
+		double tmpGrey = (tmpI /Utility::max_intensity * 255);
+
+		//taking duration into account:
+		int stretchOfTime = int (eventDuration / 0.01);
+		for(int i = 0; i < stretchOfTime; i++){
+			if( index+i < (*dynamicsMapItr).second.size() -1
+					&& (*dynamicsMapItr).second.at(index + i) < tmpGrey){
+				(*dynamicsMapItr).second.at(index+i) = int(tmpGrey);
+		//printf("greyscale is, %i index is, %i, max index, %i\n", int(tmpGrey), index, stretchOfTime);
+
+			}
+		}
+
+	}
+
 
 	if(tmpI > thresshold){
 		std::string new_key;
@@ -274,7 +344,7 @@ void IntensityMap::recursiveIlevelCalc(int Xpx, int Ypx, std::string key, std::s
 			new_key =buffer;
 			if(visitedBlocks.find(new_key) == visitedBlocks.end() ){
 				visitedBlocks.insert(new_key);
-				recursiveIlevelCalc(Xpx+resolution, Ypx, new_key, table);
+				recursiveIlevelCalc(eventDuration, activationTime,originX, originY, Xpx+resolution, Ypx, new_key, table);
 			}
 		}
 		if(Xpx-resolution >=0){
@@ -283,7 +353,7 @@ void IntensityMap::recursiveIlevelCalc(int Xpx, int Ypx, std::string key, std::s
 			new_key = buffer;
 			if(visitedBlocks.find(new_key) == visitedBlocks.end() ){
 				visitedBlocks.insert(new_key);
-				recursiveIlevelCalc(Xpx-resolution, Ypx, new_key, table);
+				recursiveIlevelCalc(eventDuration, activationTime,originX, originY,Xpx-resolution, Ypx, new_key, table);
 			}
 		}
 		if(Ypx+resolution <= h()){
@@ -292,7 +362,7 @@ void IntensityMap::recursiveIlevelCalc(int Xpx, int Ypx, std::string key, std::s
 			new_key = buffer;
 			if(visitedBlocks.find(new_key) == visitedBlocks.end() ){
 				visitedBlocks.insert(new_key);
-				recursiveIlevelCalc(Xpx, Ypx+resolution, new_key,table);
+				recursiveIlevelCalc(eventDuration, activationTime,originX, originY, Xpx, Ypx+resolution, new_key,table);
 			}
 		}
 		if(Ypx-resolution >=0 ){
@@ -301,7 +371,7 @@ void IntensityMap::recursiveIlevelCalc(int Xpx, int Ypx, std::string key, std::s
 			new_key = buffer;
 			if(visitedBlocks.find(new_key) == visitedBlocks.end() ){
 				visitedBlocks.insert(new_key);
-				recursiveIlevelCalc(Xpx, Ypx-resolution, new_key, table);
+				recursiveIlevelCalc(eventDuration, activationTime,originX, originY, Xpx, Ypx-resolution, new_key, table);
 			}
 		}
 	}
@@ -325,4 +395,32 @@ void IntensityMap::normalizeIntensityLevels(double maxValue, double minValue){
 	    double nLevel = (maxValue - minValue) / (cLevel - minValue);
 	    normalizedIntensityLevels.push_back(nLevel);
 	    } */
+}
+
+void IntensityMap::writeDynamicMaps(){
+
+	int dynamicAmount = (intensityPeriod / info.timeResolution)/0.01;
+	//write the dynamics to pictures on the HDD:
+	char buffer[50];
+	char msgBuffer[50];
+	sprintf(msgBuffer, "IntensityMap # %i, Writing dynamic map to disk\n", mapID);
+	Utility::printmsg(msgBuffer);
+	for(int k = 0; k<dynamicAmount; k++){
+		png::image<png::rgb_pixel> image(w()/resolution,h()/resolution);
+		for(int i = 0; i < w(); i+=resolution){
+			for(int j = 0; j < h(); j+=resolution){					
+				sprintf(buffer, "%i,%i", i/resolution, j/resolution);
+				std::string key = buffer;
+				dynamicsMapItr = dynamicsMap.find(key);
+				image[i/resolution][j/resolution] = png::rgb_pixel(255,(*dynamicsMapItr).second.at(k),255);
+			}
+		}
+		if(k % (dynamicAmount/10) == 0){
+			sprintf(msgBuffer, "IntensityMap # %i, has written %i percent\n",mapID,(k*100)/dynamicAmount);
+			Utility::printmsg(msgBuffer);
+		}
+		char filename[50];
+		sprintf(filename, "img/%d.png",k+((int)intensityPeriod*mapID));
+		image.write(filename);
+	}
 }

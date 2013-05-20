@@ -28,12 +28,20 @@ class Utility
 		static double min_frequency;
 		static double min_averageIlvl;
 
+		static double max_intensity;
+
 		static UI* ui;
 
 		static void incrementProgress(double value){
 			std::lock_guard<std::mutex> lock(Utility::utilityMutexUI);
 			ui->incrementProgress(value);
 		}
+
+		static void printmsg(const char* msg){
+			ui->printmsg(msg);
+		}
+
+		//static void write
 
 
 		/**

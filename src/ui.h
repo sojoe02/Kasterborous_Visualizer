@@ -32,7 +32,7 @@ class UI
 		UI(Fl_Window* window);
 		Fl_Text_Display *output;
 
-		void printmsg(const char *msg,...);
+		void printmsg(const char *msg);
 		void setProgressMinMax(int min, int max);
 		void incrementProgress(double value);
 		void resetProgress(){progress->value(0);}
@@ -79,7 +79,7 @@ class UI
 
 		//const values:
 		static const int UI_X = 1024;
-		static const int UI_Y = 700;
+		static const int UI_Y = 768;
 
 
 	private:		

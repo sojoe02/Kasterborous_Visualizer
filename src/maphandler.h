@@ -31,16 +31,19 @@ class MapHandler{
 		void findOriginPositions();
 		void calcIntensityLevels(double thresshold);
 		double calcMaxIntensityLevels();
-		static void calculateIData(MapHandler *m, std::vector<IntensityMap*> idata, double thresshold);
-		static void calculateMaxIData(MapHandler *m, std::vector<IntensityMap*> idata);
-
-		UI *ui;
 
 		void showIntensityMap(int index);
 
 		void redrawMap();
 
 	private :
+		UI *ui;
+
+		static void calculateIData(MapHandler *m, std::vector<IntensityMap*> 
+				idata, double thresshold);
+		static void calculateMaxIData(MapHandler *m, std::vector<IntensityMap*> 
+				idata);
+
 		Event::simInfo dataInfo;
 		std::list<Event::dataEvent> dataEvents;
 		std::vector<IntensityMap *> intensityMaps;
@@ -55,7 +58,7 @@ class MapHandler{
 		double thresshold;
 		int stepSize;
 		Fl_Group *mapTab;
-		
+
 };
 
 

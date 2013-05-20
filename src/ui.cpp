@@ -45,17 +45,9 @@ UI::UI(Fl_Window* window)
 }
 
 
-void UI::printmsg(const char* msg, ...){
+void UI::printmsg(const char* msg){
 	std::lock_guard<std::mutex> lock(printMutex);
-
-	const char *nextStr = NULL;
-	va_list argp;
-	outputBuffer->append(msg);
-	va_start(argp, msg);
-	while( (nextStr = va_arg(argp, const char*)) != NULL){
-			outputBuffer->append(nextStr);
-	}
-	va_end(argp);
+	outputBuffer->append(msg);	
 	Fl::check();
 }
 
@@ -71,6 +63,20 @@ void UI::incrementProgress(double value = 1){
 	progress->label(percent);
 	Fl::check();
 }
+
+/*void UI::setIntermediateProgressMinMax(int min, int max){
+	progress->maximum(max);
+	progress->minimum(min);	
+}
+
+
+void UI::incrementIntermediateProgress(double value = 1, const *char msg){
+	progress->value(progress->value() + value);
+	char percent[10];
+	sprintf(percent,"%s - %d%%",msg, int (progress->value()/progress->maximum()*100.0));
+	progress->label(percent);
+	Fl::check();
+}*/
 
 //CALLBACK FUNCTIONS:
 //
@@ -132,11 +138,12 @@ void UI::zChanged_callback(Fl_Widget *w){
 }
 
 void UI::resSlide_callback(Fl_Widget *w){
-	Utility::resolution = resSlide->value()+1;
-	resOutput->value(resSlide->value()+1);
+	Utility::resolution = resSlide->value();
+	resOutput->value(resSlide->value());
 }
 
 void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
+	processDataButton->deactivate();
 	processDataButton->label("Processing...");
 	Fl::check();
 	output->show_insert_position();	
@@ -151,20 +158,27 @@ void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
 		double tmp = maphandler->calcMaxIntensityLevels();
 		char buffer[100];
 		sprintf(buffer, "Max level has been calculated as %f\n Adjusting thresshold slider\n", tmp);
-		printmsg(buffer, NULL);
+		printmsg(buffer);
 		zCounter->bounds(0, tmp);
 		zCounter->value(tmp/33);
 		zOutput->value(tmp/33);
 		zCounter->step(tmp/100);
-	} else printmsg(fname, " not found", NULL);
+	} else {
+		printmsg(fname);
+		printmsg("not found\n");
+	}
 	calculateIButton->show();
 	processDataButton->label("Process Data");
+	processDataButton->activate();
 }
 
 void UI::calculateIButton_callback(Fl_Widget *w){
+	calculateIButton->deactivate();
+	calculateIButton->label("Generating Intensity Maps");
 	maphandler->calcIntensityLevels(zCounter->value());
 	mapCounter->show();
-
+	calculateIButton->label("Calculate Intensities");
+	calculateIButton->hide();
 }
 
 //SETUP FUNCTIONS:
@@ -177,10 +191,10 @@ void UI::setupDataTab(){
 	zCounter->align(FL_ALIGN_TOP_LEFT);
 
 	resSlide = new Fl_Hor_Slider(5,100,200,25, "Resolution:");
-	resSlide->bounds(0,101);
+	resSlide->bounds(1,7);
 
-	resSlide->step(2);
-	resSlide->value(3);
+	resSlide->step(1);
+	resSlide->value(4);
 	resSlide->callback(resSlide_static_callback, (void*)this);
 
 	resOutput = new Fl_Value_Output(205,100,100,25,"");
@@ -198,10 +212,10 @@ void UI::setupDataTab(){
 	stepSizeCounter->value(50);
 	stepSizeCounter->align(FL_ALIGN_TOP_LEFT);
 
-	processDataButton = new Fl_Button(5,ymax-100,140,25,"Process Data");
+	processDataButton = new Fl_Button(5,ymax-150,140,25,"Process Data");
 	processDataButton->callback(pButton_static_callback, (void*)this);
 
-	calculateIButton = new Fl_Button(150,ymax-100,150,25,"Calculate Intensities");
+	calculateIButton = new Fl_Button(150,ymax-150,150,25,"Calculate Intensities");
 	calculateIButton->callback(calculateIButton_static_callback, (void*)this);
 	calculateIButton->hide();
 
@@ -211,10 +225,16 @@ void UI::setupDataTab(){
 	output->buffer(outputBuffer);
 
 	//progress-bar:
-	progress = new Fl_Progress(5,ymax-50,300,30);
-    	progress->color(0x88888800);               // background color
-    	progress->selection_color(0x4444ff00);     // progress bar color
+	progress = new Fl_Progress(5,ymax-100,300,60);
+	progress->color(0x88888800);               // background color
+	progress->selection_color(0x4444ff00);     // progress bar color
 	progress->labelcolor(FL_WHITE);            // percent text color
+
+	//progress-bar:
+	//progress_intermediate = new Fl_Progress(5,ymax-50,300,30);
+	//progress_intermediate->color(0x88888800);               // background color
+	//progress_intermediate->selection_color(0xff000000);     // progress bar color
+	//progress_intermediate->labelcolor(FL_WHITE);            // percent text color
 }
 
 void UI::setupMapTab(){
@@ -248,7 +268,7 @@ void UI::setupMapTab(){
 	showFreq = new Fl_Check_Button(5,260,100,20, "Frequency:");
 	showFreq->align(FL_ALIGN_TOP_LEFT);
 	showFreq->callback(showFreq_static_callback, (void*)this);
-	
+
 	colormap = new ColorMap(5,300,120,300,"Colour Values:"); 
 	colormap->align(FL_ALIGN_TOP_LEFT);
 

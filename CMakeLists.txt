@@ -3,7 +3,7 @@ project(Kast_Vis)
 
 #Version number:
 set (kast_vis_VERSION_MAJOR 0)
-set (kast_vis_VERSION_MINOR 23)
+set (kast_vis_VERSION_MINOR 30)
 #Configure a header file to pass CMake stuff to the source code:
 configure_file (
   ${PROJECT_SOURCE_DIR}/src/kast_vis.h.in
@@ -55,10 +55,22 @@ endif(LUA52_FOUND)
 find_package(FLTK REQUIRED NO_MODULE) 
 include(${FLTK_USE_FILE})
 
-target_link_libraries(kast_vis fltk)
+find_package(PNG REQUIRED)
+
+
+target_link_libraries(kast_vis fltk -lXext  -ldl -lpthread -lpng)
+
+# /usr/lib/x86_64-linux-gnu/libXext.so.6 
+#target_link_libraries(kast_vis fltk)
+
 #------------------------------------------------
 #Set compiler flags
 #------------------------------------------------
-set(CMAKE_CXX_FLAGS "-O2 -pthread -std=c++11")
+#set(CMAKE_CXX_FLAGS "-lpthread -ldl -std=c++11")
+#set(CMAKE_C_FLAGS "-lpthread -ldl")
+
+#+CMAKE
+set(CMAKE_CXX_FLAGS "-std=c++11 -g")
+#set(CMAKE_C_FLAGS "-lpthread -ldl")
 
 

@@ -17,6 +17,7 @@ double Utility::max_averageIlvl = 0;
 double Utility::min_cumulativeIlvl = 0;
 double Utility::min_frequency = 0;
 double Utility::min_averageIlvl = 0;
+double Utility::max_intensity = 0;
 int Utility::c_state = 0;
 UI* Utility::ui = NULL;
 
