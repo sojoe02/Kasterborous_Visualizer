@@ -25,8 +25,13 @@ class IntensityMap : public Fl_Widget
 		IntensityMap(std::string msg,Event::simInfo info,int i, unsigned long long intensityPeriod
 				,int X, int Y, int W, int H,const char *L);
 		void binEvent(Event::dataEvent devent);
+
 		void calculateIlevel(double thress);
-		void recursiveIlevelCalc(double eventDuration, unsigned long long activationTime, double originX, double originY,int Xpx, int Ypx, std::string key, std::string table);
+		void calculateDlevel(double thress);
+
+		void recursiveIlevelCalc(double originX, double originY,int Xpx, int Ypx, std::string key, std::string table);
+		void recursiveDlevelCalc(double eventDuration, unsigned long long activationTime, double originX, double originY,int Xpx, int Ypx, std::string key, std::string table);
+
 		void normalizeIntensityLevels(double maxValue, double minValue);
 		void showMap();
 
@@ -43,7 +48,6 @@ class IntensityMap : public Fl_Widget
 	private:
 
 		void writeDynamicMaps();
-
 
 		std::list<Event::dataEvent> dataEvents;
 		std::list<Event::dataEvent>::iterator dataItr;

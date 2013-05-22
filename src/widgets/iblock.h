@@ -44,6 +44,7 @@ class IBlock
 		double cumulativeIlvl;
 		double frequency;
 		double averageIlvl;
+		double highest;
 		int x, y;
 		
 

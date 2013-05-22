@@ -45,6 +45,9 @@ void ColorMap::draw(){
 		}else if(state == Utility::map_Average){
 			step = Utility::max_averageIlvl * thress;
 			fl_color(Utility::getAvgColor(step));
+		}else if(state == Utility::map_Highest){
+			step = Utility::max_intensity * thress;
+			fl_color(Utility::getHighestColor(step));
 		}
 
 		fl_line(x(), y()+i, x()+w() - 50,y()+i);

@@ -41,8 +41,11 @@ int main(int argc, char **argv) {
 			kast_vis_VERSION_MAJOR,
 			kast_vis_VERSION_MINOR);
 
+	Fl_Color mainColor = fl_rgb_color(102,102,102);
+
 
 	window = new Fl_Window(UI::UI_X,UI::UI_Y,buffer);
+	window->color(mainColor);
 	ui = new UI(window);
 	Utility::ui = ui;
 	window->callback(main_callback);

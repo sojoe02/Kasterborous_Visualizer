@@ -20,7 +20,7 @@
 #include "utility.h"
 
 IBlock::IBlock(int posx, int posy)
-	:cumulativeIlvl(0),frequency(0),averageIlvl(0),
+	:cumulativeIlvl(0),frequency(0),averageIlvl(0), highest(0),
 	x(posx),y(posy){
 	}
 
@@ -32,13 +32,16 @@ Fl_Color IBlock::getColor(){
 		return Utility::getFreqColor(frequency);
 	}else if(state == Utility::map_Average){
 		return Utility::getAvgColor(averageIlvl);
+	}else if(state == Utility::map_Highest){
+		return Utility::getHighestColor(highest);
 	}
 }
 
 void IBlock::addIntensityLevel(double ilvl){
 	frequency++;
 	cumulativeIlvl += ilvl;
-	averageIlvl = cumulativeIlvl / double(frequency);	
+	averageIlvl = cumulativeIlvl / double(frequency);
+	if(ilvl > highest) highest = ilvl;	
 }
 
 /**

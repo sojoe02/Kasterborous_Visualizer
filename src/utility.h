@@ -20,6 +20,8 @@ class Utility
 		static const int map_Cumulative = 1; /*<! show cumulative I levels */
 		static const int map_Freq = 2; /* <! show frequency of calls */
 		static const int map_Average = 3; /* <! show average I levels */
+		static const int map_Highest = 4; /* <! show highest I levels */
+
 		
 		static double max_cumulativeIlvl;
 		static double max_frequency;
@@ -41,9 +43,16 @@ class Utility
 			ui->printmsg(msg);
 		}
 
+		static void incrementDProgress(double value, const char* msg, int color){
+			ui->incrementDProgress(value,msg,color);
+		}
+
+		static void setDProgressMinMax(int min, int max){
+			ui->setDProgressMinMax(min,max);
+		}
+
+
 		//static void write
-
-
 		/**
 		 * Colormapper that upon receiving a value between a min and max returns a FLTK
 		 * RGB color value. 
@@ -113,6 +122,11 @@ class Utility
 					printf("changing state to average\n");
 					return c_state;
 					break;
+				case 4 :
+					c_state = Utility::map_Highest;
+					printf("changing state to highest\n");
+					return c_state;
+					break;
 				case 0 :
 					return c_state;
 					break;
@@ -126,14 +140,14 @@ class Utility
 		static Fl_Color getCumulativeColor(double value){
 			return thressToRainbow(value,Utility::min_cumulativeIlvl,
 					Utility::max_cumulativeIlvl);
-		/**
-		 * Get color based on a frequency value.
-		 * param value between minimum- and maximum frequency value.
-		 */
+			/**
+			 * Get color based on a frequency value.
+			 * param value between minimum- and maximum frequency value.
+			 */
 		}
 		static Fl_Color getFreqColor(double value){
 			return thressToRainbow(value,Utility::min_frequency,
-				       	Utility::max_frequency);
+					Utility::max_frequency);
 		}
 		/**
 		 * Get color based on a average intensity value.
@@ -142,6 +156,15 @@ class Utility
 		static Fl_Color getAvgColor(double value){
 			return thressToRainbow(value, Utility::min_averageIlvl,
 					Utility::max_averageIlvl);
+
+		}
+		/**
+		 * Get color based on the highest intensity value.
+		 * param value between minimum- and maximum intensity value.
+		 */
+		static Fl_Color getHighestColor(double value){
+			return thressToRainbow(value, 0,
+					Utility::max_intensity);
 
 		}
 
@@ -166,7 +189,7 @@ class Utility
 				max_frequency = values[4];
 			if(min_averageIlvl > values[5])
 				max_averageIlvl = values[5];
-						
+
 		}
 
 
@@ -180,7 +203,7 @@ class Utility
 
 
 
-	
+
 
 
 

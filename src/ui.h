@@ -8,6 +8,7 @@
 #include <FL/Fl_Hor_Slider.H>
 #include <FL/Fl_Counter.H>
 #include <FL/Fl_Value_Output.H>
+#include <FL/Fl_Value_Input.H>
 #include <FL/Fl_Tabs.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Text_Display.H>
@@ -17,6 +18,7 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Check_Button.H>
 #include <FL/Fl_Progress.H>
+#include <FL/Fl_File_Chooser.H>
 
 #include <string>
 #include <mutex>
@@ -35,6 +37,8 @@ class UI
 		void printmsg(const char *msg);
 		void setProgressMinMax(int min, int max);
 		void incrementProgress(double value);
+		void setDProgressMinMax(int min, int max);
+		void incrementDProgress(double value, const char *msg, int color);
 		void resetProgress(){progress->value(0);}
 				
 		//Callback functions:
@@ -56,9 +60,23 @@ class UI
 			((UI*)f)->showGrid_callback(w);}
 		void showGrid_callback(Fl_Widget *w);
 
+		static void processDMapButton_static_callback(Fl_Widget *w, void *f){
+			((UI *)f)->processDMapButton_callback(w);}
+		void processDMapButton_callback(Fl_Widget *w);
+
+		static void browseButton_static_callback(Fl_Widget *w, void *f){
+			((UI *)f)->browseButton_callback(w);}
+		void browseButton_callback(Fl_Widget *w);
+
+
 		static void resSlide_static_callback(Fl_Widget *w, void *f){
 			((UI*)f)->resSlide_callback(w);}
 		void resSlide_callback(Fl_Widget *w);
+
+		
+		static void stepSizeCounter_static_callback(Fl_Widget *w, void *f){
+			((UI*)f)->stepSizeCounter_callback(w);}
+		void stepSizeCounter_callback(Fl_Widget *w);
 
 		static void showFreq_static_callback(Fl_Widget *w, void *f){
 			((UI *)f)->showFreq_callback(w);}
@@ -72,15 +90,17 @@ class UI
 			((UI *)f)->showAverage_callback(w);}
 		void showAverage_callback(Fl_Widget *w);
 
+		static void showHighest_static_callback(Fl_Widget *w, void *f){
+			((UI *)f)->showHighest_callback(w);}
+		void showHighest_callback(Fl_Widget *w);
+
 		static void calculateIButton_static_callback(Fl_Widget *w, void *f){
 			((UI *)f)->calculateIButton_callback(w);}
 		void calculateIButton_callback(Fl_Widget *w);
 
-
 		//const values:
 		static const int UI_X = 1024;
-		static const int UI_Y = 768;
-
+		static const int UI_Y = 730;
 
 	private:		
 		void setupMapTab();
@@ -99,27 +119,32 @@ class UI
 		Fl_Hor_Slider *zCounter;
 		Fl_Value_Output *zOutput;
 		Fl_Text_Buffer *outputBuffer;
-		Fl_Counter *stepSizeCounter;
+		Fl_Hor_Slider *stepSizeCounter;
 		Fl_Button *processDataButton;
 		Fl_Button *calculateIButton;
 		Fl_Hor_Slider *resSlide;
 		Fl_Value_Output *resOutput;
 		Fl_Progress *progress;
+		Fl_Button *browseButton;
+		Fl_Value_Output *imapOutput;
+		Fl_Box *imageBox;
+		Fl_Input *datafile;		
 
 		//Map Widgets:
+		Fl_Progress *d_progress;
+		Fl_Button *processDMapButton;
 		Fl_Check_Button *showCumulative;
 		Fl_Check_Button *showAverage;
 		Fl_Check_Button *showFreq;
+		Fl_Check_Button *showHighest;
 		Fl_Check_Button *showLocation; /*<! check button to enable or disable event origin drawing  */
 		Fl_Check_Button *showGrid; /*<! check button to enable sector grid in map drawing*/
 		Fl_Counter *mapCounter; /*<! counter for controlling currently active map*/
 		//Fl_Label *datalabel; /*<! */
-		Fl_Input *datafile;
 		ColorMap *colormap;
 
 		int xmax,ymax;
 		int ImapAmount;
-
 		std::mutex printMutex;
 };
 

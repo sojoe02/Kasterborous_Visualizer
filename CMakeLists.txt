@@ -3,7 +3,7 @@ project(Kast_Vis)
 
 #Version number:
 set (kast_vis_VERSION_MAJOR 0)
-set (kast_vis_VERSION_MINOR 30)
+set (kast_vis_VERSION_MINOR 40)
 #Configure a header file to pass CMake stuff to the source code:
 configure_file (
   ${PROJECT_SOURCE_DIR}/src/kast_vis.h.in
@@ -50,7 +50,6 @@ endif(LUA52_FOUND)
 #------------------------------------------------
 #Handle FLTK includes
 #------------------------------------------------
-#find_package(FLTK REQUIRED NO_MODULE)
 
 find_package(FLTK REQUIRED NO_MODULE) 
 include(${FLTK_USE_FILE})
@@ -58,7 +57,7 @@ include(${FLTK_USE_FILE})
 find_package(PNG REQUIRED)
 
 
-target_link_libraries(kast_vis fltk -lXext  -ldl -lpthread -lpng)
+target_link_libraries(kast_vis fltk -lXext  -ldl -lpthread -lpng -lfltk_images)
 
 # /usr/lib/x86_64-linux-gnu/libXext.so.6 
 #target_link_libraries(kast_vis fltk)

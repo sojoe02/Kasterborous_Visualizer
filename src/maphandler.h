@@ -25,6 +25,7 @@ class MapHandler{
 		void setThreadData();
 
 		int binData(int timeStep, const char* L);
+		void generateDynamicMap(double thresshold);
 		/**
 		 * Do rekursive calculations on every intensityMap.
 		 */

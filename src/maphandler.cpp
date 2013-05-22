@@ -27,7 +27,7 @@
 #include"utility.h"
 
 MapHandler::MapHandler(UI *ui, Fl_Group *mapTab)
-	:ui(ui),threadAmount(1),mapTab(mapTab), thresshold(0),stepSize(0)
+	:ui(ui),threadAmount(4),mapTab(mapTab), thresshold(0),stepSize(0)
 {
 
 }
@@ -98,7 +98,7 @@ int MapHandler::binData(int timeStep, const char* L){
 	//ui->printmsg("Binning events into suitable eventmaps\n");
 	for(dataItr = dataEvents.begin(); dataItr != dataEvents.end(); dataItr++){
 		Event::dataEvent devent = *dataItr;	
-		int tmp = int(devent.activationTime / (dataInfo.timeResolution * double(timeStep)));// - 0.5);
+		int tmp = int(devent.activationTime / (dataInfo.timeResolution * double(timeStep)) - 0.5);
 		//char buffer[100];
 		//sprintf(buffer," inserting event at step : %d, a_tmu is : %llu \n", tmp,devent.activationTime);
 		//ui->printmsg(buffer, NULL);		
@@ -240,4 +240,10 @@ void MapHandler::setProcessVariables(const char* fname, double thress, int stepS
 	thresshold = thress;
 	filename = fname;
 	//ui->printmsg(filename);
+}
+
+void MapHandler::generateDynamicMap(double thresshold){
+	if(activeIMap != NULL){
+		activeIMap->calculateDlevel(thresshold);
+	}
 }
