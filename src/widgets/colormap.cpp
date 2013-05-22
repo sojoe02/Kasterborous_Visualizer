@@ -54,8 +54,13 @@ void ColorMap::draw(){
 		if(i % 20 == 0){
 			char buffer[20];
 			//fl_color(FL_BLACK);
-			sprintf(buffer, "%f", step);
-			fl_draw(buffer,6, x() + w() - 45, y()+ i);
+			if(Utility::map_StateMachine() == Utility::map_Freq){
+				sprintf(buffer, "%d", (int)step);
+				fl_draw(buffer, x() + w() - 45, y()+ i);
+			} else {
+				sprintf(buffer, "%f", step);
+				fl_draw(buffer,6, x() + w() - 45, y()+ i);
+			}
 		}
 
 	}

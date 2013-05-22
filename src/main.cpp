@@ -8,7 +8,7 @@
 #include "maphandler.h"
 #include "utility.h"
 
-bool Utility::show_Location = true;
+bool Utility::show_Location = false;
 bool Utility::show_SectorGrid = false;
 
 double Utility::max_cumulativeIlvl = 0;
@@ -37,15 +37,18 @@ UI *ui;
 int main(int argc, char **argv) {
 
 	char buffer[50];
-	sprintf(buffer, "Kasterborous Visualizer V. %d.%d\n",
+	sprintf(buffer, "Kasterborous Visualizer (version. %d.%d)",
 			kast_vis_VERSION_MAJOR,
 			kast_vis_VERSION_MINOR);
 
 	Fl_Color mainColor = fl_rgb_color(102,102,102);
+	Fl_Color tabColor = fl_rgb_color(22,59,89);
+
 
 
 	window = new Fl_Window(UI::UI_X,UI::UI_Y,buffer);
 	window->color(mainColor);
+	window->labelcolor(tabColor);
 	ui = new UI(window);
 	Utility::ui = ui;
 	window->callback(main_callback);

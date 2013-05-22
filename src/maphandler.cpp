@@ -88,8 +88,9 @@ int MapHandler::binData(int timeStep, const char* L){
 		sprintf(buffer2, "Intensity Map %i[s] to %i[s]", i*timeStep, i*timeStep+timeStep);
 		std::string msg = buffer2;
 		//printf("%s : %s\n",buffer2 , msg.c_str());
-		IntensityMap* imap = new IntensityMap(msg,dataInfo,i,intensityPeriod, 175, 50,630, 630, "Intensity Map:");
+		IntensityMap* imap = new IntensityMap(msg,dataInfo,i,intensityPeriod, 185, 50,630, 630, "Intensity Map:");
 		mapTab->add(imap);
+		imap->labelcolor(FL_LIGHT3);
 		imap->hide();
 		intensityMaps.push_back(imap);
 		imap->align(FL_ALIGN_TOP_LEFT);
