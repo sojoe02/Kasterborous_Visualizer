@@ -20,6 +20,8 @@
 #include "intensitymap.h"
 #include "utility.h"
 #include "png++/png.hpp"
+#include "physics/phys.h"
+
 
 
 
@@ -31,6 +33,11 @@ IntensityMap::IntensityMap(std::string luafile, std::string msg,Event::simInfo i
 
 	L_State = luaL_newstate();
 	luaL_openlibs(L_State);
+
+	lua_register(L_State, "l_getMersenneFloat", l_getMersenneFloat);
+	lua_register(L_State, "l_getMersenneInteger", l_getMersenneInteger);
+	lua_register(L_State, "l_debug", l_debug);
+
 	//loadfile:
 	if(luaL_loadfile(L_State, luafile.c_str()) || lua_pcall(L_State,0,0,0)){
 		printf("error : %s \n", lua_tostring(L_State, -1));
@@ -519,4 +526,29 @@ void IntensityMap::writeDynamicMaps(){
 		sprintf(filename, "img/%d.png",k);//+((int)(intensityPeriod*0.01)*mapID));
 		image.write(filename);
 	}
+}
+
+int IntensityMap::l_debug(lua_State *L){
+	//Utility::printmsg(lua_tostring(L,-1));
+	printf(lua_tostring(L,-1));
+	return 0;
+}
+
+int IntensityMap::l_getMersenneFloat(lua_State *L){
+	double low = lua_tonumber(L,-2);
+	double high = lua_tonumber(L, -1);
+
+	double number = Phys::getMersenneFloat(low,high);
+
+	lua_pushnumber(L,number);
+	return 1;
+}
+
+int IntensityMap::l_getMersenneInteger(lua_State *L){
+	uint64_t low = lua_tonumber(L,-2);
+	uint64_t high = lua_tonumber(L, -1);
+
+	uint64_t number = Phys::getMersenneInteger(low,high);
+	lua_pushnumber(L,number);
+	return 1;
 }

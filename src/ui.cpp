@@ -44,10 +44,13 @@ UI::UI(Fl_Window* window)
 	dataTab = new Fl_Group(2,25,xmax,ymax,"Event Data Processing");
 	
 	Fl_Color tabColor = fl_rgb_color(22,59,89);
+	Fl_Color subTabColor = fl_rgb_color(120,120,120);
 
 	mapTab->color(tabColor);
 	tabs->labelcolor(tabColor);
 	dataTab->color(tabColor);
+	dataTab->labelcolor(subTabColor);
+	mapTab->labelcolor(subTabColor);
 
 	maphandler = new MapHandler(this, mapTab);	
 
@@ -236,21 +239,30 @@ void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
 	zCounter->activate();
 	mapCounter->activate();
 
-	processDataButton->label("Bin Events Into Intensity Maps");
+	processDataButton->label("Create Intensity Maps");
 	processDataButton->activate();
 }
 
 void UI::calculateIButton_callback(Fl_Widget *w){
 	processDataButton->deactivate();
 	calculateIButton->deactivate();
-	calculateIButton->label("Generating Intensity Maps...");
+	browseLuaButton->deactivate();
+	parseDataButton->deactivate();
+	browseButton->deactivate();
+
+	calculateIButton->label("Processing Event Propagation Data...");
 	maphandler->calcIntensityLevels(zCounter->value());
 	tabs->value(mapTab);
 	maphandler->showIntensityMap(mapCounter->value());
-	calculateIButton->label("Process Intensity Maps");
+	calculateIButton->label("Generate Event Propagation Data");
 	calculateIButton->deactivate();
 	zCounter->deactivate();
 	processDataButton->activate();
+	browseLuaButton->activate();
+	parseDataButton->activate();
+	browseButton->activate();
+
+
 
 }
 
@@ -365,7 +377,7 @@ void UI::setupDataTab(){
 	processDataButton->callback(pButton_static_callback, (void*)this);
 	processDataButton->deactivate();
 
-	calculateIButton = new Fl_Button(15,600,405,50,"Process Intensity Maps");
+	calculateIButton = new Fl_Button(15,600,405,50,"Generate Event Propagation Data");
 	calculateIButton->callback(calculateIButton_static_callback, (void*)this);
 	calculateIButton->deactivate();
 
@@ -377,7 +389,7 @@ void UI::setupDataTab(){
 	outputBuffer = new Fl_Text_Buffer();
 	output->buffer(outputBuffer);
 
-	imageBox = new Fl_Box(15,250,405,300);
+	imageBox = new Fl_Box(15,270,405,300);
 	Fl_XPM_Image* mapIcon = new Fl_XPM_Image("../icon/frog.xpm");
 	//Fl_Pixmap icon("../icon/frog.xpm");
 	//icon->draw(5,250);

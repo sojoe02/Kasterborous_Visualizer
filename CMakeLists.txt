@@ -3,7 +3,7 @@ project(Kast_Vis)
 
 #Version number:
 set (kast_vis_VERSION_MAJOR 0)
-set (kast_vis_VERSION_MINOR 41)
+set (kast_vis_VERSION_MINOR 42)
 #Configure a header file to pass CMake stuff to the source code:
 configure_file (
   ${PROJECT_SOURCE_DIR}/src/kast_vis.h.in
@@ -21,6 +21,8 @@ set (GENERAL
 	src/ui.cpp
 	src/maphandler.cpp
 	src/maphandler.h
+	src/physics/phys.cpp
+	src/physics/phys.h
 	)
 
 set (WIDGETS

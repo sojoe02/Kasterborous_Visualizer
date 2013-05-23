@@ -42,7 +42,11 @@ class IntensityMap : public Fl_Widget
 		//inherited from Fl_Widget:
 		void draw();
 		//void hide();
-		//void show(); 
+		//void show();
+		//
+		static int l_debug(lua_State *L);
+		static int l_getMersenneFloat(lua_State *L);
+		static int l_getMersenneInteger(lua_State *L);
 
 	private:
 

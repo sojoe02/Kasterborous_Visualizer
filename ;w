@@ -39,19 +39,11 @@ bool MapHandler::parseData(const char* filename){
 	
 	if(file.is_open()){	
 		file.read(reinterpret_cast<char*>(&dataInfo), sizeof(Event::simInfo));
-		ui->printmsg("SIMULATION INFO:\n -----------------------------------------------------------\nLUA filename\t:\t");
+		ui->printmsg("SIMULATION INFO:\n ---------------------------------------\nLUA filename:\t");
 		ui->printmsg(dataInfo.luaFileName);
-		sprintf(buffer, "\nHeight [m]\t:\t%f\n", dataInfo.areaY);
+		sprintf(buffer, "\n Environment height: \t %f[m]\n", dataInfo.areaY);
 		ui->printmsg(buffer);
-		sprintf(buffer, "Width [m]\t:\t%f\n", dataInfo.areaX);
-		ui->printmsg(buffer);
-		sprintf(buffer, "Auton Amount\t:\t%d\n", dataInfo.numberOfAutons);
-		ui->printmsg(buffer);
-		sprintf(buffer, "Event Amount\t:\t%llu\n", dataInfo.eventAmount);
-		ui->printmsg(buffer);
-		sprintf(buffer, "Time Resolution\t:\t%f\n", (double)1/dataInfo.timeResolution);
-		ui->printmsg(buffer);
-		sprintf(buffer, "MacroFactor\t:\t%d\n", dataInfo.macroFactor);
+		sprintf(buffer, "\n Environment width: \t %llu[m]\n", dataInfo.eventAmount);
 		ui->printmsg(buffer);
 
 		ui->setLuaFilename(dataInfo.luaFileName);
@@ -62,7 +54,7 @@ bool MapHandler::parseData(const char* filename){
 			dataEvents.push_back(devent);
 		}
 		ui->setProgressMinMax(1,dataEvents.size());
-		ui->printmsg("-----------------------------------------------------------\n");
+		ui->printmsg("---------------------------------------\n");
 		return true;
 	} else return false;
 }
@@ -88,8 +80,9 @@ int MapHandler::binData(int timeStep, const char* L){
 
 	std::list<Event::dataEvent>::iterator dataItr;
 	
-	int steps = int(dataInfo.tmuAmount / (dataInfo.timeResolution * double(timeStep))) + 1;
-	unsigned long long intensityPeriod = dataInfo.tmuAmount / steps;	
+	int steps = int(dataInfo.tmuAmount / (dataInfo.timeResolution * double(timeStep)) + 0.5);
+	unsigned long long intensityPeriod = dataInfo.tmuAmount / steps;
+	
 
 	char buffer[50];
 	sprintf(buffer,"binning data into %d steps %llu \n", steps,dataInfo.tmuAmount);
@@ -113,11 +106,14 @@ int MapHandler::binData(int timeStep, const char* L){
 	for(dataItr = dataEvents.begin(); dataItr != dataEvents.end(); dataItr++){
 		Event::dataEvent devent = *dataItr;
 		int seconds = devent.activationTime / dataInfo.timeResolution;
+		if(seconds > timeStep){
+			printf("timestep is %d, %d\n", seconds, timeStep);
+		}
 		//int tmp = int(devent.activationTime / (dataInfo.timeResolution * double(timeStep))-0.5);
 		//char buffer[100];
 		//sprintf(buffer," inserting event at step : %d, a_tmu is : %llu \n", tmp, devent.activationTime);
 		//ui->printmsg(buffer);		
-		intensityMaps.at(seconds/timeStep)->binEvent(devent);
+		//intensityMaps.at(tmp)->binEvent(devent);
 	}
 	ui->printmsg("Binning of data done\n");	
 
