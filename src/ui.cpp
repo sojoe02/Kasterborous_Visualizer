@@ -97,6 +97,21 @@ void UI::incrementDProgress(double value, const char* msg, int color){
 	Fl::check();
 }
 
+std::string UI::getLuaFileName(){
+	std::string filename =  luafile->value();
+	return filename;
+}
+
+void UI::setLuaFilename(const char *filename){
+	std::string pathandfile;
+	if(datapath.size() >0){
+		pathandfile= datapath + "/" + filename;
+	}  else pathandfile = filename;
+
+	luafile->value(pathandfile.c_str());
+}
+
+
 //CALLBACK FUNCTIONS:
 //
 
@@ -183,34 +198,44 @@ void UI::resSlide_callback(Fl_Widget *w){
 	resOutput->value(resSlide->value());
 }
 
+void UI::parseDataButton_callback(Fl_Widget *w){
+	
+	const char* fname = datafile->value();
+	int s = int (stepSizeCounter->value());
+	double t = zCounter->value();
+	maphandler->setProcessVariables(fname, t, s);
+
+	if(maphandler->parseData(fname)){
+		processDataButton->activate();
+	} else {
+		printmsg(fname);
+		printmsg(" not found\n");
+	}
+}
+
+
 void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
 	processDataButton->deactivate();
 	processDataButton->label("Processing...");
 	Fl::check();
 	output->show_insert_position();	
-	int s = int (stepSizeCounter->value());
-	double t = zCounter->value();
-	const char* fname = datafile->value();
-	maphandler->setProcessVariables(fname, t, s);
-	if(maphandler->parseData(fname)){
-		ImapAmount = maphandler->binData(stepSizeCounter->value(), "IntensityMap");
-		mapCounter->value(0);
-		mapCounter->bounds(0, ImapAmount-1);
-		double tmp = maphandler->calcMaxIntensityLevels();
-		char buffer[100];
-		sprintf(buffer, "Max level has been calculated as %f\n Adjusting thresshold slider\n", tmp);
-		printmsg(buffer);
-		zCounter->bounds(0, tmp);
-		zCounter->value(tmp/33);
-		zOutput->value(tmp/33);
-		zCounter->step(tmp/100);
-		calculateIButton->activate();
-		zCounter->activate();
-		mapCounter->activate();
-	} else {
-		printmsg(fname);
-		printmsg(" not found\n");
-	}
+
+	ImapAmount = maphandler->binData(stepSizeCounter->value(), "IntensityMap");
+	mapCounter->value(0);
+	mapCounter->bounds(0, ImapAmount-1);
+	double tmp = maphandler->calcMaxIntensityLevels();
+
+	char buffer[100];
+	sprintf(buffer, "Max level has been calculated as %f\n Adjusting thresshold slider\n", tmp);
+	printmsg(buffer);
+	zCounter->bounds(0, tmp);
+	zCounter->value(tmp/33);
+	zOutput->value(tmp/33);
+	zCounter->step(tmp/100);
+	calculateIButton->activate();
+	zCounter->activate();
+	mapCounter->activate();
+
 	processDataButton->label("Bin Events Into Intensity Maps");
 	processDataButton->activate();
 }
@@ -259,11 +284,32 @@ void UI::browseButton_callback(Fl_Widget *w){
 	char buffer[200];
 	sprintf(buffer,"%s",chooser.value());
 	datafile->value(buffer);
+	datapath = chooser.directory();
+}
+
+void UI::browseLuaButton_callback(Fl_Widget *w){
+	// Create the file chooser, and show it
+	Fl_File_Chooser chooser(".",                // directory
+			"*.lua",                    // filter
+			Fl_File_Chooser::MULTI,     // chooser type
+			"Finding Lua Auton File");        // title
+	chooser.show();
+	// Block until user picks something.
+	while(chooser.shown()){
+		Fl::wait();
+	}
+	// User hit cancel?
+	if ( chooser.value() == NULL ){
+		fprintf(stderr, "(User hit 'Cancel')\n"); return;
+	}
+	char buffer[200];
+	sprintf(buffer,"%s",chooser.value());
+	luafile->value(buffer);
 }
 
 //SETUP FUNCTIONS:
 void UI::setupDataTab(){
-	zCounter = new Fl_Hor_Slider(15, 550, 300,25, "Z-Thresshold:");
+	zCounter = new Fl_Hor_Slider(15, 550, 300,25, "Intensity Thresshold:");
 	zCounter->labelcolor(FL_LIGHT3);
 
 	zCounter->bounds(0, 1);
@@ -273,40 +319,51 @@ void UI::setupDataTab(){
 	zCounter->align(FL_ALIGN_TOP_LEFT);
 	zCounter->deactivate();
 
-	resSlide = new Fl_Hor_Slider(15,100,300,25, "Resolution:");
+	resSlide = new Fl_Hor_Slider(15,150,300,25, "Resolution:");
 	resSlide->labelcolor(FL_LIGHT3);
 	resSlide->bounds(1,9);
 	resSlide->step(1);
 	resSlide->value(4);
 	resSlide->callback(resSlide_static_callback, (void*)this);
 
-	resOutput = new Fl_Value_Output(315,100,100,25,"");
+	resOutput = new Fl_Value_Output(315,150,100,25,"");
 	resSlide->align(FL_ALIGN_TOP_LEFT);
 	resSlide->value(Utility::resolution);
 	resOutput->value(Utility::resolution);
 
-	datafile = new Fl_Input(15,50, 300,25,"Filename:");
+	datafile = new Fl_Input(15,50, 300,25,"Data Filename:");
 	datafile->insert("savefile.kas");
 	datafile->align(FL_ALIGN_TOP_LEFT);
 	datafile->labelcolor(FL_LIGHT3);
 
 
-	browseButton = new Fl_Button(315,50,100,25,"Browse");
+	browseButton = new Fl_Button(320,50,95,25,"Browse");
 	browseButton->callback(browseButton_static_callback, (void*)this);
 
-	stepSizeCounter = new Fl_Hor_Slider(15,150,300,25,"Intensity Map Time Coverage[s]:");
+	luafile = new Fl_Input(15,100, 300,25,"Lua Filename:");
+	luafile->insert("template.lua");
+	luafile->align(FL_ALIGN_TOP_LEFT);
+	luafile->labelcolor(FL_LIGHT3);
+
+	browseLuaButton = new Fl_Button(320,100,100,25,"Browse");
+	browseLuaButton->callback(browseLuaButton_static_callback, (void*)this);
+
+	stepSizeCounter = new Fl_Hor_Slider(15,200,300,25,"Intensity Map Time Coverage[s]:");
 	stepSizeCounter->value(360);
 	stepSizeCounter->bounds(1,3600);
 	stepSizeCounter->step(10);
-	imapOutput = new Fl_Value_Output(315,150,100,25,"");
+	imapOutput = new Fl_Value_Output(315,200,100,25,"");
 	imapOutput->value(360);
 	stepSizeCounter->callback(stepSizeCounter_static_callback, (void*)this);
 	stepSizeCounter->align(FL_ALIGN_TOP_LEFT);
 	stepSizeCounter->labelcolor(FL_LIGHT3);
 
+	parseDataButton = new Fl_Button(15,240,195,50,"Parse Data File");
+	parseDataButton->callback(parseDataButton_static_callback, (void*)this);
 
-	processDataButton = new Fl_Button(15,200,405,50,"Bin Events Into Intensity Maps");
+	processDataButton = new Fl_Button(220,240,195,50,"Create Intensity Maps");
 	processDataButton->callback(pButton_static_callback, (void*)this);
+	processDataButton->deactivate();
 
 	calculateIButton = new Fl_Button(15,600,405,50,"Process Intensity Maps");
 	calculateIButton->callback(calculateIButton_static_callback, (void*)this);

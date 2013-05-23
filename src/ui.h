@@ -40,6 +40,8 @@ class UI
 		void setDProgressMinMax(int min, int max);
 		void incrementDProgress(double value, const char *msg, int color);
 		void resetProgress(){progress->value(0);}
+		std::string getLuaFileName();
+		void setLuaFilename(const char *filename);
 				
 		//Callback functions:
 		static void zChanged_static_callback(Fl_Widget *w, void *f);
@@ -68,6 +70,13 @@ class UI
 			((UI *)f)->browseButton_callback(w);}
 		void browseButton_callback(Fl_Widget *w);
 
+		static void browseLuaButton_static_callback(Fl_Widget *w, void *f){
+			((UI *)f)->browseLuaButton_callback(w);}
+		void browseLuaButton_callback(Fl_Widget *w);
+
+		static void parseDataButton_static_callback(Fl_Widget *w, void *f){
+			((UI*)f)->parseDataButton_callback(w);}
+		void parseDataButton_callback(Fl_Widget *w);
 
 		static void resSlide_static_callback(Fl_Widget *w, void *f){
 			((UI*)f)->resSlide_callback(w);}
@@ -128,7 +137,12 @@ class UI
 		Fl_Button *browseButton;
 		Fl_Value_Output *imapOutput;
 		Fl_Box *imageBox;
-		Fl_Input *datafile;		
+		Fl_Input *datafile;
+
+		Fl_Input *luafile;
+		Fl_Button *browseLuaButton;
+
+		Fl_Button *parseDataButton;
 
 		//Map Widgets:
 		Fl_Progress *d_progress;
@@ -146,6 +160,8 @@ class UI
 		int xmax,ymax;
 		int ImapAmount;
 		std::mutex printMutex;
+
+		std::string datapath;
 };
 
 #endif // UI_H

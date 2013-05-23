@@ -22,7 +22,7 @@
 class IntensityMap : public Fl_Widget
 {
 	public:
-		IntensityMap(std::string msg,Event::simInfo info,int i, unsigned long long intensityPeriod
+		IntensityMap(std::string luafile, std::string msg,Event::simInfo info,int i, unsigned long long intensityPeriod
 				,int X, int Y, int W, int H,const char *L);
 		void binEvent(Event::dataEvent devent);
 
@@ -30,9 +30,8 @@ class IntensityMap : public Fl_Widget
 		void calculateDlevel(double thress);
 
 		void recursiveIlevelCalc(double originX, double originY,int Xpx, int Ypx, std::string key, std::string table);
-		void recursiveDlevelCalc(double eventDuration, unsigned long long activationTime, double originX, double originY,int Xpx, int Ypx, std::string key, std::string table);
+		void recursiveDlevelCalc(double propagationSpeed, double eventDuration, unsigned long long activationTime, double originX, double originY,int Xpx, int Ypx, std::string key, std::string table);
 
-		void normalizeIntensityLevels(double maxValue, double minValue);
 		void showMap();
 
 		//find initial proccessing data
@@ -68,6 +67,7 @@ class IntensityMap : public Fl_Widget
 		double maxIntensity; /*<! highest possible intensity level. */
 
 		std::string msg;
+		std::string luafile;
 
 		lua_State* L_State;
 		Event::simInfo info;

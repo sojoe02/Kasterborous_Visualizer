@@ -34,22 +34,27 @@ MapHandler::MapHandler(UI *ui, Fl_Group *mapTab)
 
 bool MapHandler::parseData(const char* filename){
 	std::ifstream file(filename, std::ifstream::binary);
+
+	char buffer[100];
 	
 	if(file.is_open()){	
 		file.read(reinterpret_cast<char*>(&dataInfo), sizeof(Event::simInfo));
-		ui->printmsg("Loading datafile\nLUA filename is:");
+		ui->printmsg("SIMULATION INFO:\n ---------------------------------------\nLUA filename:\t");
 		ui->printmsg(dataInfo.luaFileName);
-		ui->printmsg("\n");
-		//ui->printmsg(dataInfo.luaFileName);
+		sprintf(buffer, "\n Environment height: \t %f[m]\n", dataInfo.areaY);
+		ui->printmsg(buffer);
+		sprintf(buffer, "\n Environment width: \t %llu[m]\n", dataInfo.eventAmount);
+		ui->printmsg(buffer);
+
+		ui->setLuaFilename(dataInfo.luaFileName);
 		while(!file.eof()){
-			//char buffer[100];
 			Event::dataEvent devent; 
 			file.read(reinterpret_cast<char*>(&devent), sizeof(Event::dataEvent));
-			//sprintf(buffer, "id: %llu, activationtime %llu",devent.id, devent.activationTime);			
+			//printf("id: %s, activationtime %llu\n",devent.table, devent.activationTime);
 			dataEvents.push_back(devent);
 		}
 		ui->setProgressMinMax(1,dataEvents.size());
-		ui->printmsg("Data loaded\n");
+		ui->printmsg("---------------------------------------\n");
 		return true;
 	} else return false;
 }
@@ -83,26 +88,27 @@ int MapHandler::binData(int timeStep, const char* L){
 	sprintf(buffer,"binning data into %d steps %llu \n", steps,dataInfo.tmuAmount);
 	ui->printmsg(buffer);
 	ui->printmsg("\nInitiating intensity maps\n");
+	std::string luafile = ui->getLuaFileName();
+
 	for(int i = 0; i < steps; i++){
 		char buffer2[50];
 		sprintf(buffer2, "Intensity Map %i[s] to %i[s]", i*timeStep, i*timeStep+timeStep);
 		std::string msg = buffer2;
 		//printf("%s : %s\n",buffer2 , msg.c_str());
-		IntensityMap* imap = new IntensityMap(msg,dataInfo,i,intensityPeriod, 185, 50,630, 630, "Intensity Map:");
+		IntensityMap* imap = new IntensityMap(luafile,msg,dataInfo,i,intensityPeriod, 185, 50,630, 630, "Intensity Map:");
 		mapTab->add(imap);
 		imap->labelcolor(FL_LIGHT3);
 		imap->hide();
 		intensityMaps.push_back(imap);
 		imap->align(FL_ALIGN_TOP_LEFT);
-	}		
-
+	}
 	//ui->printmsg("Binning events into suitable eventmaps\n");
 	for(dataItr = dataEvents.begin(); dataItr != dataEvents.end(); dataItr++){
 		Event::dataEvent devent = *dataItr;	
-		int tmp = int(devent.activationTime / (dataInfo.timeResolution * double(timeStep)) - 0.5);
+		int tmp = int(devent.activationTime / (dataInfo.timeResolution * double(timeStep))-0.5);
 		//char buffer[100];
-		//sprintf(buffer," inserting event at step : %d, a_tmu is : %llu \n", tmp,devent.activationTime);
-		//ui->printmsg(buffer, NULL);		
+		//sprintf(buffer," inserting event at step : %d, a_tmu is : %llu \n", tmp, devent.activationTime);
+		//ui->printmsg(buffer);		
 		intensityMaps.at(tmp)->binEvent(devent);
 	}
 	ui->printmsg("Binning of data done\n");	
