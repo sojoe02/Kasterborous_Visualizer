@@ -426,19 +426,20 @@ void IntensityMap::recursiveDlevelCalc(double propagationSpeed, double eventDura
 
 		unsigned long long arrivalTMU = distance / (propagationSpeed / info.timeResolution);
 
-		int index = activationTime/(0.01*info.timeResolution) + arrivalTMU/(0.01*info.timeResolution);
-		index = index/(mapID+1);
+		int index = (activationTime - intensityPeriod * mapID)/(0.01*info.timeResolution) + arrivalTMU/(0.01*info.timeResolution);
+		//index = index/(mapID+1);
 		//printf("activation time is %llu , arrivalTMU is %llu, distance %f, maps periodoffset: %llu\n", activationTime, arrivalTMU,distance,intensityPeriod*(mapID+1));
 		//convert to greyscale:
 		double tmpGrey = (tmpI /Utility::max_intensity * 255);
+		int stretchOfTime = int (eventDuration / 10);
+			if(stretchOfTime == 0) stretchOfTime = 1;
 
 		//taking duration into account:
-		int stretchOfTime = int (eventDuration / 0.01);
-		for(int i = 0; i < stretchOfTime; i++){
+		for(int i = 0; i < stretchOfTime; i++){		
+			//printf("greyscale is, %i index is, %i, max index, %i\n", int(tmpGrey), stretchOfTime, (int)eventDuration);
 			if( index+i < (*dynamicsMapItr).second.size() -1
 					&& (*dynamicsMapItr).second.at(index + i) < tmpGrey){
 				(*dynamicsMapItr).second.at(index+i) = int(tmpGrey);
-				//printf("greyscale is, %i index is, %i, max index, %i\n", int(tmpGrey), index, stretchOfTime);
 			}
 		}
 
@@ -515,7 +516,7 @@ void IntensityMap::writeDynamicMaps(){
 				std::string key = buffer;
 				dynamicsMapItr = dynamicsMap.find(key);
 				unsigned char color = (*dynamicsMapItr).second.at(k);
-				image[i/resolution][j/resolution] = png::rgb_pixel(192,color,color);
+				image[i/resolution][j/resolution] = png::rgb_pixel(color,color,color);
 			}
 		}
 		if( k % 10 == 0){
@@ -523,14 +524,14 @@ void IntensityMap::writeDynamicMaps(){
 			Utility::incrementDProgress(10,msgBuffer,2);
 		}
 		char filename[50];
-		sprintf(filename, "img/%d.png",k);//+((int)(intensityPeriod*0.01)*mapID));
+		sprintf(filename, "img/%d.png",k+1);//+((int)(intensityPeriod*0.01)*mapID));
 		image.write(filename);
 	}
 }
 
 int IntensityMap::l_debug(lua_State *L){
 	//Utility::printmsg(lua_tostring(L,-1));
-	printf(lua_tostring(L,-1));
+	//printf(lua_tostring(L,-1));
 	return 0;
 }
 

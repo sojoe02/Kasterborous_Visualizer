@@ -3,7 +3,7 @@ project(Kast_Vis)
 
 #Version number:
 set (kast_vis_VERSION_MAJOR 0)
-set (kast_vis_VERSION_MINOR 42)
+set (kast_vis_VERSION_MINOR 43)
 #Configure a header file to pass CMake stuff to the source code:
 configure_file (
   ${PROJECT_SOURCE_DIR}/src/kast_vis.h.in
