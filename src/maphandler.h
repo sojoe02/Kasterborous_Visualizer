@@ -21,11 +21,12 @@ class MapHandler{
 		 */
 		bool parseData(const char* filename);
 		void setProcessVariables(const char* fname, double thress, int stepS);
+		void calcDynamicMap(int index, double thresshold);
+
 		
 		void setThreadData();
 
-		int binData(int timeStep, const char* L);
-		void generateDynamicMap(double thresshold);
+		int binData(int timeStep);
 		/**
 		 * Do rekursive calculations on every intensityMap.
 		 */
@@ -44,6 +45,9 @@ class MapHandler{
 				idata, double thresshold);
 		static void calculateMaxIData(MapHandler *m, std::vector<IntensityMap*> 
 				idata);
+
+		static void generateDynamicMap(IntensityMap *map, double thresshold);
+
 
 		Event::simInfo dataInfo;
 		std::list<Event::dataEvent> dataEvents;

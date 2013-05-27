@@ -43,11 +43,13 @@ class Utility
 			ui->printmsg(msg);
 		}
 
-		static void incrementDProgress(double value, const char* msg, int color){
+		static void incrementDProgress(int value, const char* msg, int color){
+			std::lock_guard<std::mutex> lock(Utility::utilityMutexUI);
 			ui->incrementDProgress(value,msg,color);
 		}
 
 		static void setDProgressMinMax(int min, int max){
+			std::lock_guard<std::mutex> lock(Utility::utilityMutexUI);
 			ui->setDProgressMinMax(min,max);
 		}
 

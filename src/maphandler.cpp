@@ -74,7 +74,7 @@ bool MapHandler::parseData(const char* filename){
  * @param Timestep, stepsize from 1[s] to -> int_max. 
  * @return number of intensityMaps.
  */
-int MapHandler::binData(int timeStep, const char* L){
+int MapHandler::binData(int timeStep){
 
 	activeIMap = NULL;
 	
@@ -95,12 +95,12 @@ int MapHandler::binData(int timeStep, const char* L){
 	sprintf(buffer,"binning data into %d steps %llu \n", steps,dataInfo.tmuAmount);
 	ui->printmsg(buffer);
 	ui->printmsg("\nInitiating intensity maps\n");
-	std::string luafile = ui->getLuaFileName();
+	std::string luafile(ui->getLuaFileName());
 
 	for(int i = 0; i < steps; i++){
-		char buffer2[50];
+		char buffer2[70];
 		sprintf(buffer2, "Intensity Map %i[s] to %i[s]", i*timeStep, i*timeStep+timeStep);
-		std::string msg = buffer2;
+		std::string msg(buffer2);
 		//printf("%s : %s\n",buffer2 , msg.c_str());
 		IntensityMap* imap = new IntensityMap(luafile,msg,dataInfo,i,intensityPeriod, 185, 50,630, 630, "Intensity Map:");
 		mapTab->add(imap);
@@ -203,7 +203,7 @@ void MapHandler::redrawMap(){
  * @param idata vector with a chuck of imaps (all imaps / threadnumber)
  */
 void MapHandler::calculateMaxIData(MapHandler *m, std::vector<IntensityMap*> idata){
-	Utility::printmsg("starting thread\n");
+	//Utility::printmsg("starting thread\n");
 	std::vector<IntensityMap*>::iterator idtr;
 	for(idtr = idata.begin(); idtr != idata.end(); idtr++){
 		(*idtr)->calculateMaxIntensity();
@@ -255,8 +255,20 @@ void MapHandler::setProcessVariables(const char* fname, double thress, int stepS
 	//ui->printmsg(filename);
 }
 
-void MapHandler::generateDynamicMap(double thresshold){
-	if(activeIMap != NULL){
-		activeIMap->calculateDlevel(thresshold);
+void MapHandler::calcDynamicMap(int index, double thresshold){
+	ui->printmsg("Processing Dynamic Map\n");
+
+	IntensityMap *map = intensityMaps.at(index);
+
+	std::thread* calcthread = new std::thread(generateDynamicMap,map,thresshold);
+	calcthread->join();
+	delete calcthread;
+}
+
+void MapHandler::generateDynamicMap(IntensityMap *map, double thresshold){
+	//std::vector<IntensityMap*>::iterator idtr = intensityMaps.begin();
+	//(*idtr)->calculateDlevel(thresshold);
+	if(map != NULL){
+		map->calculateDlevel(thresshold);
 	}
 }

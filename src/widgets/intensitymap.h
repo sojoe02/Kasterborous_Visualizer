@@ -30,7 +30,7 @@ class IntensityMap : public Fl_Widget
 		void calculateDlevel(double thress);
 
 		void recursiveIlevelCalc(double originX, double originY,int Xpx, int Ypx, std::string key, std::string table);
-		void recursiveDlevelCalc(double propagationSpeed, double eventDuration, unsigned long long activationTime, double originX, double originY,int Xpx, int Ypx, std::string key, std::string table);
+		void recursiveDlevelCalc(double propagationSpeed, double eventDuration, unsigned long long activationTime, double originX, double originY,int Xpx, int Ypx, const char* key, const char* table);
 
 		void showMap();
 

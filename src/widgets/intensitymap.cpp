@@ -46,7 +46,7 @@ IntensityMap::IntensityMap(std::string luafile, std::string msg,Event::simInfo i
 	ycf = double(h()) / info.areaY;
 	label(msg.c_str());
 
-	resolution = 5;
+	//resolution = 5;
 }
 
 void IntensityMap::draw(){
@@ -61,7 +61,7 @@ void IntensityMap::draw(){
 		}	
 	}
 	if(Utility::show_SectorGrid){
-		fl_color(FL_WHITE);
+		fl_color(FL_BLACK);
 		for(int i = 0; i < w(); i+=resolution){
 			fl_line(x()+i,y(),x()+i,y()+h());
 		}
@@ -70,13 +70,16 @@ void IntensityMap::draw(){
 		}
 	}
 	if(Utility::show_Location){
-		fl_color(FL_BLACK);
+		char buffer[20];
 		//first draw the positions of all active Autons:
 		for(dataItr = dataEvents.begin(); dataItr != dataEvents.end(); dataItr++){
+			fl_color(FL_WHITE);
+
+
+			sprintf(buffer,"%d", ((*dataItr).originID));
 
 			int pxx = int((*dataItr).originX * xcf); 
 			int pxy = int((*dataItr).originY * ycf);
-
 			int size = 15;
 			for(int i = -size; i < size; i++){
 				if(pxx+x()+i < w()+x() && pxx+x()+i > x() && pxy+y()-i < y()+h()
@@ -86,6 +89,9 @@ void IntensityMap::draw(){
 				if(pxy+y()+i < h()+y() && pxy+y()+i > y() && pxx+x()+i < x()+w())
 					fl_point(pxx+x()+i, pxy+y()+i);
 			}
+			fl_color(FL_BLACK);
+			fl_draw(buffer, pxx+x()-10,pxy+y()-10);
+
 		}
 	}
 }
@@ -214,9 +220,9 @@ void IntensityMap::calculateIlevel(double thress){
 			Utility::incrementProgress(10);
 	}
 
-	//writeDynamicMaps();
+	writeDynamicMaps();
 
-	//dynamicsMap.clear();
+	dynamicsMap.clear();
 
 	//--------------------------------------------
 
@@ -248,7 +254,8 @@ void IntensityMap::calculateIlevel(double thress){
 }
 
 void IntensityMap::calculateDlevel(double thress){
-
+	resolution = Utility::resolution;
+	thresshold = thress;	
 		/*
 	 * Initiate the Dynamic map containers:
 	 */
@@ -275,8 +282,9 @@ void IntensityMap::calculateDlevel(double thress){
 	printf("number of dynamic maps are, %i, activation TMU is, %llu \n"
 			, dynamicAmount, mapActivation);
 	/* ---------------------------------------------- */
-	Utility::setDProgressMinMax(1,dataEvents.size());
-	char msgBuffer[50];
+	Utility::setDProgressMinMax(1,(int)dataEvents.size());
+	printf("dataEvents size %i \n", (int)dataEvents.size());
+	char msgBuffer[150];
 
 	int  i;
 	//Then do the recursive calls:
@@ -303,10 +311,10 @@ void IntensityMap::calculateDlevel(double thress){
 				int(event.originY*ycf/resolution));
 
 		std::string new_key = buffer;
-		visitedBlocks.insert(new_key);		
-		std::string table = event.table;
+		visitedBlocks.insert(new_key);
+		std::string table = event.table;		
 
-		recursiveDlevelCalc(event.propagationSpeed, event.duration, event.activationTime, event.originX, event.originY, event.originX*xcf, event.originY*ycf, new_key,table);
+		recursiveDlevelCalc(event.propagationSpeed, event.duration, event.activationTime, event.originX, event.originY, event.originX*xcf, event.originY*ycf, buffer, event.table);
 
 		visitedBlocks.clear();
 
@@ -315,7 +323,7 @@ void IntensityMap::calculateDlevel(double thress){
 			Utility::incrementDProgress(10,msgBuffer,1);
 		}
 	}
-	writeDynamicMaps();
+	//writeDynamicMaps();
 	dynamicsMap.clear();
 }
 
@@ -353,6 +361,7 @@ void IntensityMap::recursiveIlevelCalc(double originX,double originY, int Xpx, i
 	if(tmpI > thresshold){
 		std::string new_key;
 		char buffer[40];
+
 		if(Xpx+resolution <= w()){
 			//Go East:
 			sprintf(buffer,"%i,%i", (Xpx+resolution)/resolution, (Ypx)/resolution);
@@ -368,7 +377,7 @@ void IntensityMap::recursiveIlevelCalc(double originX,double originY, int Xpx, i
 			new_key = buffer;
 			if(visitedBlocks.find(new_key) == visitedBlocks.end() ){
 				visitedBlocks.insert(new_key);
-				recursiveIlevelCalc(originX, originY,Xpx-resolution, Ypx, new_key, table);
+				recursiveIlevelCalc(originX, originY, Xpx-resolution, Ypx, new_key, table);
 			}
 		}
 		if(Ypx+resolution <= h()){
@@ -377,7 +386,7 @@ void IntensityMap::recursiveIlevelCalc(double originX,double originY, int Xpx, i
 			new_key = buffer;
 			if(visitedBlocks.find(new_key) == visitedBlocks.end() ){
 				visitedBlocks.insert(new_key);
-				recursiveIlevelCalc(originX, originY, Xpx, Ypx+resolution, new_key,table);
+				recursiveIlevelCalc(originX, originY, Xpx, Ypx+resolution, new_key, table);
 			}
 		}
 		if(Ypx-resolution >=0 ){
@@ -402,26 +411,31 @@ void IntensityMap::recursiveIlevelCalc(double originX,double originY, int Xpx, i
  * @param key, hash map key which is "Xpx,Ypx" string.
  * @param event, the data event in question.
  */
-void IntensityMap::recursiveDlevelCalc(double propagationSpeed, double eventDuration, unsigned long long activationTime,double originX,double originY, int Xpx, int Ypx, std::string key, std::string table){
+void IntensityMap::recursiveDlevelCalc(double propagationSpeed, double eventDuration, unsigned long long activationTime,double originX,double originY, int Xpx, int Ypx, const char* key, const char* table){
+
 	lua_settop(L_State,0);
 
 	lua_getglobal(L_State, "processFunction");
 	lua_pushnumber(L_State, double(Xpx)/xcf);
 	lua_pushnumber(L_State, double(Ypx)/ycf);
-	lua_pushstring(L_State, table.c_str());
+	lua_pushstring(L_State, table);
 
 	if(lua_pcall(L_State,3,1,0)!=LUA_OK)
 		printf("error on calling processfunction : %s\n,",
 				lua_tostring(L_State,-1));
 
-	double tmpI = lua_tonumber(L_State,-1);
+	double tmpI = lua_tonumber(L_State,-1); 
 
 	/* Dynamics map updating:
 	*/
+	//std::unordered_map<std::string, colorLevels>::iterator dynamicsMapItr;
+
 	dynamicsMapItr = dynamicsMap.find(key); 
 
 	if(dynamicsMapItr != dynamicsMap.end()){
 		//int dynamicAmount = (intensityPeriod / info.timeResolution)/0.01;
+		//
+		//double distance = 40;
 		double distance = sqrt( pow((originX-Xpx/xcf), 2) + pow((originY-Ypx/ycf),2) );
 
 		unsigned long long arrivalTMU = distance / (propagationSpeed / info.timeResolution);
@@ -431,31 +445,35 @@ void IntensityMap::recursiveDlevelCalc(double propagationSpeed, double eventDura
 		//printf("activation time is %llu , arrivalTMU is %llu, distance %f, maps periodoffset: %llu\n", activationTime, arrivalTMU,distance,intensityPeriod*(mapID+1));
 		//convert to greyscale:
 		double tmpGrey = (tmpI /Utility::max_intensity * 255);
-		int stretchOfTime = int (eventDuration / 10);
-			if(stretchOfTime == 0) stretchOfTime = 1;
+		int stretchOfTime = int(eventDuration / 10);
+		if(stretchOfTime == 0) stretchOfTime = 1;
 
 		//taking duration into account:
 		for(int i = 0; i < stretchOfTime; i++){		
 			//printf("greyscale is, %i index is, %i, max index, %i\n", int(tmpGrey), stretchOfTime, (int)eventDuration);
 			if( index+i < (*dynamicsMapItr).second.size() -1
-					&& (*dynamicsMapItr).second.at(index + i) < tmpGrey){
+					&&(*dynamicsMapItr).second.at(index + i) < tmpGrey){
+
 				(*dynamicsMapItr).second.at(index+i) = int(tmpGrey);
+
 			}
 		}
 
-	}
-
+	} 
 
 	if(tmpI > thresshold){
 		std::string new_key;
+		//std::string new_table = "";
+		//new_table = table;
 		char buffer[40];
+
 		if(Xpx+resolution <= w()){
 			//Go East:
 			sprintf(buffer,"%i,%i", (Xpx+resolution)/resolution, (Ypx)/resolution);
 			new_key =buffer;
 			if(visitedBlocks.find(new_key) == visitedBlocks.end() ){
 				visitedBlocks.insert(new_key);
-				recursiveDlevelCalc(propagationSpeed, eventDuration, activationTime,originX, originY, Xpx+resolution, Ypx, new_key, table);
+				recursiveDlevelCalc(propagationSpeed, eventDuration, activationTime, originX, originY, Xpx+resolution, Ypx, buffer, table);
 			}
 		}
 		if(Xpx-resolution >=0){
@@ -464,7 +482,7 @@ void IntensityMap::recursiveDlevelCalc(double propagationSpeed, double eventDura
 			new_key = buffer;
 			if(visitedBlocks.find(new_key) == visitedBlocks.end() ){
 				visitedBlocks.insert(new_key);
-				recursiveDlevelCalc(propagationSpeed, eventDuration, activationTime,originX, originY,Xpx-resolution, Ypx, new_key, table);
+				recursiveDlevelCalc(propagationSpeed, eventDuration, activationTime, originX, originY,Xpx-resolution, Ypx, buffer, table);
 			}
 		}
 		if(Ypx+resolution <= h()){
@@ -473,7 +491,7 @@ void IntensityMap::recursiveDlevelCalc(double propagationSpeed, double eventDura
 			new_key = buffer;
 			if(visitedBlocks.find(new_key) == visitedBlocks.end() ){
 				visitedBlocks.insert(new_key);
-				recursiveDlevelCalc(propagationSpeed, eventDuration, activationTime,originX, originY, Xpx, Ypx+resolution, new_key,table);
+				recursiveDlevelCalc(propagationSpeed, eventDuration, activationTime, originX, originY, Xpx, Ypx+resolution, buffer, table);
 			}
 		}
 		if(Ypx-resolution >=0 ){
@@ -482,7 +500,7 @@ void IntensityMap::recursiveDlevelCalc(double propagationSpeed, double eventDura
 			new_key = buffer;
 			if(visitedBlocks.find(new_key) == visitedBlocks.end() ){
 				visitedBlocks.insert(new_key);
-				recursiveDlevelCalc(propagationSpeed, eventDuration, activationTime,originX, originY, Xpx, Ypx-resolution, new_key, table);
+				recursiveDlevelCalc(propagationSpeed, eventDuration, activationTime, originX, originY, Xpx, Ypx-resolution, buffer, table);
 			}
 		}
 	}
@@ -516,7 +534,7 @@ void IntensityMap::writeDynamicMaps(){
 				std::string key = buffer;
 				dynamicsMapItr = dynamicsMap.find(key);
 				unsigned char color = (*dynamicsMapItr).second.at(k);
-				image[i/resolution][j/resolution] = png::rgb_pixel(color,color,color);
+				image[j/resolution][i/resolution] = png::rgb_pixel(color,color,color);
 			}
 		}
 		if( k % 10 == 0){

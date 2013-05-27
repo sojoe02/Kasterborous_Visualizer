@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
+#include <chrono>
 
 #include <FL/Fl_Shared_Image.H>
 #include <FL/Fl_XPM_Image.H>
@@ -30,8 +31,13 @@
 #include "maphandler.h"
 #include "utility.h"
 
+using std::chrono::duration_cast;
+using std::chrono::milliseconds;
+using std::chrono::seconds;
+using std::chrono::steady_clock;
+
 UI::UI(Fl_Window* window)
-	:window(window)
+	:window(window),ImapAmount(0)
 {
 	xmax = UI::UI_X -5;
 	ymax = UI::UI_Y -5;
@@ -88,14 +94,16 @@ void UI::setDProgressMinMax(int min, int max){
 }
 
 
-void UI::incrementDProgress(double value, const char* msg, int color){
+void UI::incrementDProgress(int value, const char* msg, int color){
 	if(color == 1){
 		d_progress->selection_color(0xFFFF9900);     // progress bar color
 	}else d_progress->selection_color(0x4444ff00);     // progress bar color
 
 	d_progress->value(d_progress->value() + value);
-	char percent[100];
-	sprintf(percent,"%s - %d%%",msg, int (d_progress->value()/d_progress->maximum()*100.0));
+	//printf("progress bar min current value: %i, %f\n", d_progress->value(), d_progress->maximum() );
+
+	char percent[200];
+	sprintf(percent,"%s - %d%% \t %d/%d",msg ,int (d_progress->value()/d_progress->maximum()*100.0), (int)d_progress->value(), (int)d_progress->maximum());
 	d_progress->label(percent);
 	Fl::check();
 }
@@ -202,7 +210,7 @@ void UI::resSlide_callback(Fl_Widget *w){
 }
 
 void UI::parseDataButton_callback(Fl_Widget *w){
-	
+
 	const char* fname = datafile->value();
 	int s = int (stepSizeCounter->value());
 	double t = zCounter->value();
@@ -218,12 +226,15 @@ void UI::parseDataButton_callback(Fl_Widget *w){
 
 
 void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
+	auto start = steady_clock::now();
+
 	processDataButton->deactivate();
 	processDataButton->label("Processing...");
 	Fl::check();
-	output->show_insert_position();	
+	output->show_insert_position();
 
-	ImapAmount = maphandler->binData(stepSizeCounter->value(), "IntensityMap");
+	int stepValue = (int)stepSizeCounter->value();
+	ImapAmount = maphandler->binData(stepValue);
 	mapCounter->value(0);
 	mapCounter->bounds(0, ImapAmount-1);
 	double tmp = maphandler->calcMaxIntensityLevels();
@@ -241,9 +252,15 @@ void UI::pButton_callback(Fl_Widget *w, MapHandler *m){
 
 	processDataButton->label("Create Intensity Maps");
 	processDataButton->activate();
+
+	auto stop = steady_clock::now();	
+	sprintf(buffer, "Creation of intensity Maps:\t %d[s] \n", (int)duration_cast<seconds>(stop - start).count()	);
+	printmsg(buffer);
 }
 
 void UI::calculateIButton_callback(Fl_Widget *w){
+	auto start = steady_clock::now();	
+
 	processDataButton->deactivate();
 	calculateIButton->deactivate();
 	browseLuaButton->deactivate();
@@ -262,20 +279,30 @@ void UI::calculateIButton_callback(Fl_Widget *w){
 	parseDataButton->activate();
 	browseButton->activate();
 
-
-
+	char buffer[100];
+	auto stop = steady_clock::now();	
+	sprintf(buffer, "Intensity Map Processing Took:\t %d[s] \n", (int)duration_cast<seconds>(stop - start).count()	);
+	printmsg(buffer);
 }
 
 void UI::processDMapButton_callback(Fl_Widget *w){
+
+	auto start = steady_clock::now();
+
 	processDataButton->deactivate();
 	processDMapButton->deactivate();
 
 	processDMapButton->label("Processing...");
-	maphandler->generateDynamicMap(zCounter->value());
+	maphandler->calcDynamicMap(mapCounter->value(), zCounter->value());
 	processDMapButton->label("Write\n Dynamic Map");
 
 	processDMapButton->activate();
 	processDataButton->activate();
+
+	char buffer[100];
+	auto stop = steady_clock::now();	
+	sprintf(buffer, "Dynamic Map Processing Took:\t %d[s] \n", (int)duration_cast<seconds>(stop - start).count()	);
+	printmsg(buffer);
 }
 
 void UI::browseButton_callback(Fl_Widget *w){
@@ -327,7 +354,7 @@ void UI::setupDataTab(){
 	zCounter->bounds(0, 1);
 	zCounter->step(0.01);
 	zCounter->callback(zChanged_static_callback, (void*)this);
-	zOutput = new Fl_Value_Output(315, 550, 100, 25, "");
+	zOutput = new Fl_Value_Output(320, 550, 95, 25, "");
 	zCounter->align(FL_ALIGN_TOP_LEFT);
 	zCounter->deactivate();
 
@@ -338,7 +365,7 @@ void UI::setupDataTab(){
 	resSlide->value(4);
 	resSlide->callback(resSlide_static_callback, (void*)this);
 
-	resOutput = new Fl_Value_Output(315,150,100,25,"");
+	resOutput = new Fl_Value_Output(320,150,95,25,"");
 	resSlide->align(FL_ALIGN_TOP_LEFT);
 	resSlide->value(Utility::resolution);
 	resOutput->value(Utility::resolution);
@@ -357,14 +384,14 @@ void UI::setupDataTab(){
 	luafile->align(FL_ALIGN_TOP_LEFT);
 	luafile->labelcolor(FL_LIGHT3);
 
-	browseLuaButton = new Fl_Button(320,100,100,25,"Browse");
+	browseLuaButton = new Fl_Button(320,100,95,25,"Browse");
 	browseLuaButton->callback(browseLuaButton_static_callback, (void*)this);
 
 	stepSizeCounter = new Fl_Hor_Slider(15,200,300,25,"Intensity Map Time Coverage[s]:");
 	stepSizeCounter->value(360);
 	stepSizeCounter->bounds(1,3600);
 	stepSizeCounter->step(10);
-	imapOutput = new Fl_Value_Output(315,200,100,25,"");
+	imapOutput = new Fl_Value_Output(320,200,95,25,"");
 	imapOutput->value(360);
 	stepSizeCounter->callback(stepSizeCounter_static_callback, (void*)this);
 	stepSizeCounter->align(FL_ALIGN_TOP_LEFT);
@@ -382,7 +409,7 @@ void UI::setupDataTab(){
 	calculateIButton->deactivate();
 
 	//output-area:
-	output = new Fl_Text_Display(500,50,500,660,"Output:");
+	output = new Fl_Text_Display(500,50,500,670,"Output:");
 	output->align(FL_ALIGN_TOP_LEFT);
 	output->labelcolor(FL_LIGHT3);
 
@@ -451,13 +478,11 @@ void UI::setupMapTab(){
 	processDMapButton = new Fl_Button(15,600,160,50,"Write\n Dynamic Map");
 	processDMapButton->callback(processDMapButton_static_callback, (void*)this);
 
-
 	//progress-bar:
 	d_progress = new Fl_Progress(15,690,900,30);
 	d_progress->color(0x88888800);               // background color
 	d_progress->selection_color(0xff000000);     // progress bar color
 	d_progress->labelcolor(FL_WHITE);
-
 
 	mapTab->add(colormap);
 	mapTab->add(mapCounter);

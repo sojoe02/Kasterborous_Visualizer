@@ -38,7 +38,7 @@ class UI
 		void setProgressMinMax(int min, int max);
 		void incrementProgress(double value);
 		void setDProgressMinMax(int min, int max);
-		void incrementDProgress(double value, const char *msg, int color);
+		void incrementDProgress(int value, const char *msg, int color);
 		void resetProgress(){progress->value(0);}
 		std::string getLuaFileName();
 		void setLuaFilename(const char *filename);
@@ -160,6 +160,8 @@ class UI
 		int xmax,ymax;
 		int ImapAmount;
 		std::mutex printMutex;
+
+
 
 		std::string datapath;
 };
