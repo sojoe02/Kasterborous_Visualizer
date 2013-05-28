@@ -323,7 +323,7 @@ void IntensityMap::calculateDlevel(double thress){
 			Utility::incrementDProgress(10,msgBuffer,1);
 		}
 	}
-	//writeDynamicMaps();
+	writeDynamicMaps();
 	dynamicsMap.clear();
 }
 
