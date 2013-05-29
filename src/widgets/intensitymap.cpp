@@ -219,11 +219,6 @@ void IntensityMap::calculateIlevel(double thress){
 		if(i % 10 == 0)	
 			Utility::incrementProgress(10);
 	}
-
-	writeDynamicMaps();
-
-	dynamicsMap.clear();
-
 	//--------------------------------------------
 
 	printf("Calculating min and max values\n");
